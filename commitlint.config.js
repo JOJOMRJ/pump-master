@@ -5,16 +5,16 @@ export default {
       2,
       'always',
       [
-        'feat', // 新功能
-        'fix', // 修复bug
-        'docs', // 文档更新
-        'style', // 代码格式化
-        'refactor', // 重构
-        'test', // 测试相关
-        'chore', // 构建过程或辅助工具的变动
-        'ci', // CI/CD相关
-        'perf', // 性能优化
-        'revert', // 回滚
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'test',
+        'chore',
+        'ci',
+        'perf',
+        'revert',
       ],
     ],
     'type-case': [2, 'always', 'lower-case'],
