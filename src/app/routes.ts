@@ -1,12 +1,12 @@
 /**
- * 应用路由配置
+ * Application route configuration
  *
- * 路由规划：
- * /                    - 公共主页 (重定向到/login或/dashboard)
- * /login              - 登录页面
- * /dashboard          - 认证后的主页面 (受保护)
- * /profile            - 用户资料页面 (受保护)
- * /pumps              - 泵设备列表 (受保护，为Iteration 2准备)
+ * Route planning:
+ * /                    - Public homepage (redirects to /login or /dashboard)
+ * /login              - Login page
+ * /dashboard          - Authenticated homepage (protected)
+ * /profile            - User profile page (protected)
+ * /pumps              - Pump device list (protected, prepared for Iteration 2)
  */
 
 export const ROUTES = {

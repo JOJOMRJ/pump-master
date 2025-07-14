@@ -1,13 +1,13 @@
-// Token存储的key常量
+// Token storage key constants
 const TOKEN_KEY = 'pump_master_auth_token';
 const REFRESH_TOKEN_KEY = 'pump_master_refresh_token';
 
 /**
- * Token存储工具 - 遵循KISS原则
- * 只提供基础的localStorage操作，不包含业务逻辑
+ * Token storage utility - following KISS principle
+ * Provides basic localStorage operations only, no business logic
  */
 export const tokenStorage = {
-  // 获取访问token
+  // Get access token
   getToken(): string | null {
     try {
       return localStorage.getItem(TOKEN_KEY);
@@ -16,25 +16,25 @@ export const tokenStorage = {
     }
   },
 
-  // 设置访问token
+  // Set access token
   setToken(token: string): void {
     try {
       localStorage.setItem(TOKEN_KEY, token);
     } catch {
-      // 静默失败，在某些环境中localStorage可能不可用
+      // Fail silently, localStorage may not be available in some environments
     }
   },
 
-  // 移除访问token
+  // Remove access token
   removeToken(): void {
     try {
       localStorage.removeItem(TOKEN_KEY);
     } catch {
-      // 静默失败
+      // Fail silently
     }
   },
 
-  // 获取refresh token
+  // Get refresh token
   getRefreshToken(): string | null {
     try {
       return localStorage.getItem(REFRESH_TOKEN_KEY);
@@ -43,25 +43,25 @@ export const tokenStorage = {
     }
   },
 
-  // 设置refresh token
+  // Set refresh token
   setRefreshToken(refreshToken: string): void {
     try {
       localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     } catch {
-      // 静默失败
+      // Fail silently
     }
   },
 
-  // 移除refresh token
+  // Remove refresh token
   removeRefreshToken(): void {
     try {
       localStorage.removeItem(REFRESH_TOKEN_KEY);
     } catch {
-      // 静默失败
+      // Fail silently
     }
   },
 
-  // 清除所有认证相关数据
+  // Clear all authentication related data
   clearAll(): void {
     this.removeToken();
     this.removeRefreshToken();

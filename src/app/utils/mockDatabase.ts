@@ -1,6 +1,6 @@
 import type { User } from '../types';
 
-// Mock用户数据（包含密码，仅用于Mock验证）
+// Mock user data (includes passwords for mock validation only)
 export const MOCK_USERS: (User & { password: string })[] = [
   {
     id: 'user-admin-001',

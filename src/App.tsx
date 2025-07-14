@@ -1,15 +1,28 @@
-import './App.css';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+import { LoginPage } from './app/components/LoginPage';
 
-// Main App component for Pump Master application
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Pump Master</h1>
-        <p>InformAG Technical Assessment - Project Framework Setup</p>
-        <p>Iteration 0: Infrastructure setup with Git hooks</p>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <div className="container mt-5">
+              <h1>Dashboard (TODO)</h1>
+              <p>This will be implemented in later phases.</p>
+            </div>
+          }
+        />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
 }
 
