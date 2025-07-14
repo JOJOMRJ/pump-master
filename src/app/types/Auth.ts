@@ -15,8 +15,29 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  user: User;
-  token: string;
-  refreshToken: string;
-  expiresAt: string;
+  success: boolean;
+  data?: {
+    user: User;
+    token?: string;
+    refreshToken?: string;
+    expiresAt?: string;
+  };
+  error?: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+  timestamp?: string;
+  requestId?: string;
+}
+
+export interface MockAuthServiceConfig {
+  networkDelay: {
+    min: number;
+    max: number;
+  };
+  errorSimulation: {
+    enabled: boolean;
+    rate: number; // 0-1 probability
+  };
 }
