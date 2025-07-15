@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`LoginHeader > should match snapshot 1`] = `
+<div
+  class="text-center mb-4"
+>
+  <h2
+    class="h3 mb-1"
+  >
+    Welcome back
+  </h2>
+</div>
+`;
