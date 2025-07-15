@@ -1,24 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Table,
-  Button,
-  Badge,
-  Form,
-  Container,
-  Row,
-  Col,
-} from 'react-bootstrap';
+import { Table, Badge, Form, Container, Row, Col } from 'react-bootstrap';
 import type { PumpDevice } from '../../types/PumpDevice';
 import { mockPumpService } from '../../services/mockPumpService';
 import { Loading } from '../../../shared/components';
-import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { IoSearch } from 'react-icons/io5';
-import { HiOutlineFilter } from 'react-icons/hi';
-import { TiPencil } from 'react-icons/ti';
+import { PageHeader, PumpsToolbar } from './components';
 
 export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPumps, setSelectedPumps] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchPumps = async () => {
@@ -44,6 +34,29 @@ export const PumpsPage: React.FC = () => {
     fetchPumps();
   }, []);
 
+  // Event handlers
+  const handleNewPump = () => {
+    console.log('New Pump clicked');
+  };
+
+  const handleSearch = () => {
+    console.log('Search clicked');
+  };
+
+  const handleFilter = () => {
+    console.log('Filter clicked');
+  };
+
+  const handleEdit = () => {
+    console.log('Edit clicked, selected:', selectedPumps.size);
+  };
+
+  const handleDelete = () => {
+    console.log('Delete clicked, selected:', selectedPumps.size);
+    // TODO: Implement actual deletion logic
+    setSelectedPumps(new Set()); // Clear selection after delete
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -51,42 +64,17 @@ export const PumpsPage: React.FC = () => {
   return (
     <Container>
       {/* Page Header */}
-      <Row className="mb-4">
-        <Col xs={12}>
-          <div className="d-flex justify-content-between align-items-center">
-            <h2 className="mb-0">Pumps</h2>
-            <Button variant="secondary" size="sm">
-              New Pump
-            </Button>
-          </div>
-        </Col>
-      </Row>
+      <PageHeader title="Pumps" onNewPump={handleNewPump} />
 
       {/* Toolbar */}
-      <Row className="mb-3">
-        <Col xs={12}>
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex gap-2">
-              <Button variant="outline-secondary" className="border-0">
-                <IoSearch />
-              </Button>
-              <Button variant="outline-secondary" className="border-0">
-                <HiOutlineFilter />
-              </Button>
-              <Button variant="outline-secondary" className="border-0">
-                <TiPencil />
-              </Button>
-            </div>
-            <Button
-              variant="primary"
-              style={{ display: 'flex', alignItems: 'center' }}
-            >
-              <RiDeleteBin5Fill className="me-1" />
-              <span>Delete</span>
-            </Button>
-          </div>
-        </Col>
-      </Row>
+      <PumpsToolbar
+        selectedCount={selectedPumps.size}
+        onSearch={handleSearch}
+        onFilter={handleFilter}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        disabled={loading}
+      />
 
       {/* Pumps Table */}
       <Row>
