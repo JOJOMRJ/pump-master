@@ -54,10 +54,9 @@ describe('PumpsPage', () => {
       expect(screen.getByText('Pump 1')).toBeInTheDocument();
       expect(screen.getByText('Centrifugal')).toBeInTheDocument();
       expect(screen.getByText('Area A')).toBeInTheDocument();
-      expect(screen.getByText('1,000')).toBeInTheDocument();
-      expect(screen.getByText('150')).toBeInTheDocument();
-      expect(screen.getByText('GPM')).toBeInTheDocument();
-      expect(screen.getAllByText('psi')).toHaveLength(3); // We have 3 pressure columns
+      expect(screen.getByText('1000 GPM')).toBeInTheDocument();
+      expect(screen.getByText('150 psi')).toBeInTheDocument();
+      expect(screen.getByText('5 sec')).toBeInTheDocument();
     });
   });
 
@@ -74,7 +73,7 @@ describe('PumpsPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Pumps')).toBeInTheDocument();
-      expect(screen.getByText('Showing 0 pumps')).toBeInTheDocument();
+      expect(screen.getAllByText('No pumps found')).toHaveLength(2);
     });
   });
 
@@ -155,7 +154,7 @@ describe('PumpsPage', () => {
     render(<PumpsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Showing 2 pumps')).toBeInTheDocument();
+      expect(screen.getByText('Showing 1-2 of 2 pumps')).toBeInTheDocument();
     });
   });
 });

@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Badge, Form, Container, Row, Col } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import type { PumpDevice } from '../../types/PumpDevice';
 import { mockPumpService } from '../../services/mockPumpService';
 import { Loading } from '../../../shared/components';
-import { PageHeader, PumpsToolbar } from './components';
+import { PageHeader, PumpsToolbar, PumpsTable } from './components';
 
 export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPumps, setSelectedPumps] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
   useEffect(() => {
     const fetchPumps = async () => {
@@ -57,6 +59,22 @@ export const PumpsPage: React.FC = () => {
     setSelectedPumps(new Set()); // Clear selection after delete
   };
 
+  const handleSelectionChange = (selectedIds: Set<string>) => {
+    setSelectedPumps(selectedIds);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // 清除当前页的选择状态
+    setSelectedPumps(new Set());
+  };
+
+  // Calculate pagination info
+  const totalItems = pumps.length;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentPagePumps = pumps.slice(startIndex, endIndex);
+
   if (loading) {
     return <Loading />;
   }
@@ -77,88 +95,16 @@ export const PumpsPage: React.FC = () => {
       />
 
       {/* Pumps Table */}
-      <Row>
-        <Col xs={12}>
-          <Table striped hover responsive>
-            <thead className="table-dark">
-              <tr>
-                <th scope="col">
-                  <Form.Check type="checkbox" />
-                </th>
-                <th scope="col">Pump Name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Area/Block</th>
-                <th scope="col">Latitude</th>
-                <th scope="col">Longitude</th>
-                <th scope="col">Flow Rate</th>
-                <th scope="col">Offset</th>
-                <th scope="col">Current Pressure</th>
-                <th scope="col">Min Pressure</th>
-                <th scope="col">Max Pressure</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pumps.map(pump => (
-                <tr key={pump.id}>
-                  <td>
-                    <Form.Check type="checkbox" />
-                  </td>
-                  <td>
-                    <strong>{pump.name}</strong>
-                  </td>
-                  <td>
-                    <Badge bg="secondary">{pump.type}</Badge>
-                  </td>
-                  <td>{pump.areaBlock}</td>
-                  <td className="text-end">
-                    <small className="text-muted">{pump.latitude}</small>
-                  </td>
-                  <td className="text-end">
-                    <small className="text-muted">{pump.longitude}</small>
-                  </td>
-                  <td className="text-end">
-                    <strong>{pump.flowRate.value.toLocaleString()}</strong>
-                    <small className="text-muted ms-1">
-                      {pump.flowRate.unit}
-                    </small>
-                  </td>
-                  <td className="text-end">
-                    <strong>{pump.offset.value}</strong>
-                    <small className="text-muted ms-1">
-                      {pump.offset.unit}
-                    </small>
-                  </td>
-                  <td className="text-end">
-                    <strong>{pump.currentPressure.value}</strong>
-                    <small className="text-muted ms-1">
-                      {pump.currentPressure.unit}
-                    </small>
-                  </td>
-                  <td className="text-end">
-                    <strong>{pump.minPressure.value}</strong>
-                    <small className="text-muted ms-1">
-                      {pump.minPressure.unit}
-                    </small>
-                  </td>
-                  <td className="text-end">
-                    <strong>{pump.maxPressure.value}</strong>
-                    <small className="text-muted ms-1">
-                      {pump.maxPressure.unit}
-                    </small>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
-
-      {/* Summary */}
-      <Row className="mt-3">
-        <Col xs={12}>
-          <div className="text-muted">Showing {pumps.length} pumps</div>
-        </Col>
-      </Row>
+      <PumpsTable
+        pumps={currentPagePumps}
+        selectedPumps={selectedPumps}
+        onSelectionChange={handleSelectionChange}
+        loading={loading}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={handlePageChange}
+      />
     </Container>
   );
 };
