@@ -15,6 +15,7 @@ import {
   CenteredContainer,
 } from './shared/components/AppLayout';
 import { LoginPage } from './app/components/LoginPage';
+import { PumpsPage } from './app/components/PumpsPage';
 
 function App() {
   return (
@@ -49,12 +50,11 @@ function App() {
               />
 
               <Route
-                path="/overview"
+                path="/pumps"
                 element={
                   <ProtectedRoute>
                     <PageContainer fluid>
-                      <h1>Pump Overview</h1>
-                      <p>Overview of all pumps will be displayed here.</p>
+                      <PumpsPage />
                     </PageContainer>
                   </ProtectedRoute>
                 }

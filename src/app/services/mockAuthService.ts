@@ -65,7 +65,7 @@ export const login = async (
       data: {
         user,
         token: generateToken(user),
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // Expires in 15 minutes
+        expiresAt: new Date(Date.now() + 1000 * 60 * 1000).toISOString(),
       },
     };
   } catch {
