@@ -32,19 +32,14 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div
-      className="d-flex align-items-center justify-content-center "
-      style={{ minHeight: 'calc(100vh - 120px)' }}
-    >
-      <div className="p-4" style={{ width: '400px' }}>
-        <LoginHeader />
-        <LoginForm
-          isLoading={isLoading}
-          failureMessage={failureMessage}
-          onSubmit={handleLogin}
-        />
-        <LoginFooter />
-      </div>
+    <div className="p-4" style={{ width: '400px' }}>
+      <LoginHeader />
+      <LoginForm
+        isLoading={isLoading}
+        error={failureMessage}
+        onSubmit={handleLogin}
+      />
+      <LoginFooter />
     </div>
   );
 };

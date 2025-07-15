@@ -1,57 +1,34 @@
 import React from 'react';
+import { Button, Spinner } from 'react-bootstrap';
+import type { ButtonProps } from 'react-bootstrap';
 
-interface LoadingButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface LoadingButtonProps extends ButtonProps {
   isLoading?: boolean;
   loadingText?: string;
-  variant?:
-    | 'primary'
-    | 'secondary'
-    | 'success'
-    | 'danger'
-    | 'warning'
-    | 'info'
-    | 'light'
-    | 'dark';
-  size?: 'sm' | 'lg';
-  fullWidth?: boolean;
   children: React.ReactNode;
 }
 
 export const LoadingButton: React.FC<LoadingButtonProps> = ({
   isLoading = false,
   loadingText = 'Loading...',
-  variant = 'primary',
-  size,
-  fullWidth = false,
   children,
-  className = '',
   disabled,
   ...props
 }) => {
-  const baseClass = 'btn';
-  const variantClass = `btn-${variant}`;
-  const sizeClass = size ? `btn-${size}` : '';
-  const fullWidthClass = fullWidth ? 'w-100' : '';
-
-  const combinedClassName = [
-    baseClass,
-    variantClass,
-    sizeClass,
-    fullWidthClass,
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    <button
-      {...props}
-      className={combinedClassName}
-      disabled={isLoading || disabled}
-    >
+    <Button {...props} disabled={isLoading || disabled}>
+      {isLoading && (
+        <Spinner
+          as="span"
+          animation="border"
+          size="sm"
+          role="status"
+          aria-hidden="true"
+          className="me-2"
+        />
+      )}
       {isLoading ? loadingText : children}
-    </button>
+    </Button>
   );
 };
 

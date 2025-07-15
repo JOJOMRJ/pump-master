@@ -1,7 +1,9 @@
 import React from 'react';
+import { Form } from 'react-bootstrap';
 import type { FieldError, UseFormRegisterReturn } from 'react-hook-form';
+import type { FormControlProps } from 'react-bootstrap';
 
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface FormInputProps extends FormControlProps {
   label?: string;
   error?: FieldError;
   register: UseFormRegisterReturn;
@@ -11,24 +13,17 @@ export const FormInput: React.FC<FormInputProps> = ({
   label,
   error,
   register,
-  className = '',
   ...props
 }) => {
   return (
-    <div className="mb-3">
-      {label && (
-        <label className="form-label" htmlFor={register.name}>
-          {label}
-        </label>
-      )}
-      <input
-        {...register}
-        {...props}
-        className={`form-control ${error ? 'is-invalid' : ''} ${className}`}
-        id={register.name}
-      />
-      {error && <div className="invalid-feedback">{error.message}</div>}
-    </div>
+    // controlId is used by <Form.Label> to automatically set htmlFor.
+    <Form.Group className="mb-3" controlId={register.name}>
+      {label && <Form.Label>{label}</Form.Label>}
+      <Form.Control {...register} {...props} isInvalid={!!error} />
+      <Form.Control.Feedback type="invalid">
+        {error?.message}
+      </Form.Control.Feedback>
+    </Form.Group>
   );
 };
 

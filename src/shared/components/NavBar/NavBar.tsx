@@ -1,5 +1,13 @@
 import React from 'react';
+import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+import Form from 'react-bootstrap/Form';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Link, NavLink } from 'react-router-dom';
+import { RxBell } from 'react-icons/rx';
+import { PiStarFourFill } from 'react-icons/pi';
 import { useAuth } from '../../../app/contexts';
 
 export const NavBar: React.FC = () => {
@@ -10,111 +18,116 @@ export const NavBar: React.FC = () => {
   };
 
   return (
-    <header className="p-3 mb-3 border-bottom shadow">
-      <div className="container">
-        <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-          {/* Brand/Logo - Always visible */}
-          <Link
-            to="/"
-            className="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none"
-          >
-            <strong className="me-2">PumpMaster</strong>
-          </Link>
+    <Navbar expand="lg" className="bg-white border-bottom" variant="light">
+      <Container fluid className="px-4">
+        {/* Brand/Logo with icon */}
+        <Navbar.Brand
+          as={Link}
+          to="/"
+          className="d-flex align-items-center text-dark fw-bold text-decoration-none"
+        >
+          <PiStarFourFill className="me-2" />
+          <span>PumpMaster</span>
+        </Navbar.Brand>
 
-          {/* Navigation Menu - Only when authenticated */}
+        {isAuthenticated && <Navbar.Toggle aria-controls="basic-navbar-nav" />}
+
+        <Navbar.Collapse id="basic-navbar-nav">
+          {/* Navigation Links - Only when authenticated */}
           {isAuthenticated && (
-            <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-              <li>
-                <NavLink to="/overview" className="nav-link px-2">
-                  Overview
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/pumps" className="nav-link px-2">
-                  Pumps
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/inspections" className="nav-link px-2">
-                  Inspections
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/reports" className="nav-link px-2">
-                  Reports
-                </NavLink>
-              </li>
-            </ul>
+            <Nav className="me-auto">
+              <Nav.Link
+                as={NavLink}
+                to="/dashboard"
+                className="text-muted px-3"
+              >
+                Dashboard
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/pumps" className="text-muted px-3">
+                Pumps
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/reports" className="text-muted px-3">
+                Reports
+              </Nav.Link>
+              <Nav.Link as={NavLink} to="/alerts" className="text-muted px-3">
+                Alerts
+              </Nav.Link>
+            </Nav>
           )}
 
           {/* Right side content */}
           <div className="d-flex align-items-center">
             {/* Search Form - Only when authenticated */}
             {isAuthenticated && (
-              <form className="me-3" role="search">
-                <input
+              <div className="position-relative me-3">
+                <Form.Control
                   type="search"
-                  className="form-control"
-                  placeholder="Search pumps..."
+                  placeholder="Search"
+                  className="ps-5 bg-light border-0 rounded-pill"
                   aria-label="Search"
                 />
-              </form>
-            )}
-
-            {/* User Section */}
-            {isAuthenticated && user && (
-              <div className="dropdown text-end">
-                <button
-                  className="btn btn-link p-0 d-block link-body-emphasis text-decoration-none dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
+                <div
+                  className="position-absolute top-50 start-0 translate-middle-y ps-3 text-muted"
+                  style={{ pointerEvents: 'none' }}
                 >
-                  <div
-                    className="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center text-white"
-                    style={{ width: '32px', height: '32px', fontSize: '14px' }}
-                  >
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                </button>
-                <ul className="dropdown-menu text-small">
-                  <li>
-                    <span className="dropdown-item-text small text-muted">
-                      {user.name}
-                    </span>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/profile">
-                      Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/settings">
-                      Settings
-                    </Link>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      type="button"
-                      onClick={handleLogout}
-                    >
-                      Sign out
-                    </button>
-                  </li>
-                </ul>
+                  🔍
+                </div>
               </div>
             )}
+
+            {isAuthenticated && (
+              <>
+                {/* Notification Icon */}
+                <Button
+                  variant="light"
+                  className="rounded me-3 d-flex align-items-center justify-content-center border-0"
+                  style={{ width: '40px', height: '40px' }}
+                >
+                  <RxBell className="text-muted" />
+                </Button>
+
+                {/* User Avatar Dropdown */}
+                {user && (
+                  <NavDropdown
+                    title={
+                      <div
+                        className="rounded-circle bg-dark d-inline-flex align-items-center justify-content-center text-white"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                        }}
+                      >
+                        {(user?.name || 'User').charAt(0).toUpperCase()}
+                      </div>
+                    }
+                    id="user-nav-dropdown"
+                    align="end"
+                  >
+                    <NavDropdown.ItemText className="small text-muted">
+                      {user.name}
+                    </NavDropdown.ItemText>
+                    <NavDropdown.ItemText className="small text-muted">
+                      {user.email}
+                    </NavDropdown.ItemText>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item as={Link} to="/profile">
+                      Profile
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/settings">
+                      Settings
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item onClick={handleLogout}>
+                      Sign out
+                    </NavDropdown.Item>
+                  </NavDropdown>
+                )}
+              </>
+            )}
           </div>
-        </div>
-      </div>
-    </header>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 };
 
