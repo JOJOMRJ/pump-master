@@ -166,10 +166,56 @@ export const filterPumps = async (filters: {
   }
 };
 
+// Delete pumps by IDs
+export const deletePumps = async (
+  ids: string[]
+): Promise<PumpServiceResponse<string[]>> => {
+  try {
+    await simulateDelay();
+
+    // Check if all IDs exist
+    const existingIds = ids.filter(id =>
+      MOCK_PUMPS.some(pump => pump.id === id)
+    );
+
+    if (existingIds.length === 0) {
+      return {
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'No pumps found with the provided IDs',
+        },
+      };
+    }
+
+    // Remove pumps from the mock data
+    // Note: In a real app, this would be a database operation
+    for (let i = MOCK_PUMPS.length - 1; i >= 0; i--) {
+      if (existingIds.includes(MOCK_PUMPS[i].id)) {
+        MOCK_PUMPS.splice(i, 1);
+      }
+    }
+
+    return {
+      success: true,
+      data: existingIds,
+    };
+  } catch {
+    return {
+      success: false,
+      error: {
+        code: 'DELETE_ERROR',
+        message: 'Failed to delete pumps',
+      },
+    };
+  }
+};
+
 // Default export containing all methods
 export const mockPumpService = {
   getPumps,
   getPumpById,
   searchPumps,
   filterPumps,
+  deletePumps,
 };
