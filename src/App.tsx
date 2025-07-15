@@ -7,7 +7,6 @@ import {
 import { AuthProvider } from './app/contexts';
 import { NavBar } from './shared/components/NavBar';
 import { ProtectedRoute } from './shared/components/ProtectedRoute';
-import { LoginPage } from './app/components/LoginPage';
 import {
   AppLayout,
   AppHeader,
@@ -15,6 +14,7 @@ import {
   PageContainer,
   CenteredContainer,
 } from './shared/components/AppLayout';
+import { LoginPage } from './app/components/LoginPage';
 
 function App() {
   return (

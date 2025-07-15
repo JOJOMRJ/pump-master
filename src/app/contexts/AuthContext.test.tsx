@@ -36,7 +36,10 @@ const mockSuccessResponse = {
 // Mock failed login response
 const mockFailResponse = {
   success: false,
-  error: 'Invalid credentials',
+  error: {
+    code: 'INVALID_CREDENTIALS',
+    message: 'Invalid credentials',
+  },
 };
 
 describe('AuthContext', () => {
