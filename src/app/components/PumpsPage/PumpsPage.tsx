@@ -65,7 +65,7 @@ export const PumpsPage: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // 清除当前页的选择状态
+    // Clear current page selection state
     setSelectedPumps(new Set());
   };
 

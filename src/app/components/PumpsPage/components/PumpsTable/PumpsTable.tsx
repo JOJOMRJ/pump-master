@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Form, Row, Col, Pagination } from 'react-bootstrap';
+import { Table, Form, Row, Col, Pagination, Card } from 'react-bootstrap';
 import type { PumpDevice } from '../../../../types/PumpDevice';
 
 interface PumpsTableProps {
@@ -23,21 +23,39 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
   totalItems = 0,
   onPageChange,
 }) => {
-  // 写死的列配置
+  // Column configuration with responsive display control
   const columns = [
-    { key: 'name', label: 'Pump Name' },
-    { key: 'type', label: 'Type' },
-    { key: 'areaBlock', label: 'Area/Block' },
-    { key: 'latitude', label: 'Latitude' },
-    { key: 'longitude', label: 'Longitude' },
-    { key: 'flowRate', label: 'Flow Rate' },
-    { key: 'offset', label: 'Offset' },
-    { key: 'currentPressure', label: 'Current Pressure' },
-    { key: 'minPressure', label: 'Min Pressure' },
-    { key: 'maxPressure', label: 'Max Pressure' },
-  ];
+    { key: 'name', label: 'Pump Name', responsive: 'always' },
+    { key: 'type', label: 'Type', responsive: 'md' },
+    { key: 'areaBlock', label: 'Area/Block', responsive: 'md' },
+    { key: 'latitude', label: 'Latitude', responsive: 'lg' },
+    { key: 'longitude', label: 'Longitude', responsive: 'lg' },
+    { key: 'flowRate', label: 'Flow Rate', responsive: 'sm' },
+    { key: 'offset', label: 'Offset', responsive: 'xl' },
+    { key: 'currentPressure', label: 'Current Pressure', responsive: 'sm' },
+    { key: 'minPressure', label: 'Min Pressure', responsive: 'lg' },
+    { key: 'maxPressure', label: 'Max Pressure', responsive: 'lg' },
+  ] as const;
 
-  // 格式化单元格值
+  // Get responsive CSS class names
+  const getResponsiveClass = (responsive: string) => {
+    switch (responsive) {
+      case 'always':
+        return '';
+      case 'sm':
+        return 'd-none d-sm-table-cell';
+      case 'md':
+        return 'd-none d-md-table-cell';
+      case 'lg':
+        return 'd-none d-lg-table-cell';
+      case 'xl':
+        return 'd-none d-xl-table-cell';
+      default:
+        return '';
+    }
+  };
+
+  // Format cell values
   const formatValue = (value: unknown) => {
     if (value === null || value === undefined) return '-';
 
@@ -113,64 +131,127 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
 
   return (
     <>
-      {/* Pumps Table */}
-      <Row>
-        <Col xs={12}>
-          <Table striped hover responsive>
-            <thead className="table-dark">
-              <tr>
-                <th scope="col">
-                  <Form.Check
-                    type="checkbox"
-                    checked={isAllSelected}
-                    ref={input => {
-                      if (input) input.indeterminate = isIndeterminate;
-                    }}
-                    onChange={e => handleSelectAll(e.target.checked)}
-                    disabled={loading || pumps.length === 0}
-                    title={isAllSelected ? 'Deselect all' : 'Select all'}
-                  />
-                </th>
-                {columns.map(column => (
-                  <th key={column.key} scope="col">
-                    {column.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pumps.map(pump => (
-                <tr
-                  key={pump.id}
-                  className={selectedPumps.has(pump.id) ? 'table-active' : ''}
+      {/* Mobile Card View - Only visible on small screens */}
+      <div className="d-block d-md-none">
+        {pumps.length === 0 ? (
+          <Row>
+            <Col xs={12}>
+              <Card className="text-center">
+                <Card.Body className="py-5">
+                  <Card.Text className="text-muted">No pumps found</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        ) : (
+          <Row>
+            {pumps.map(pump => (
+              <Col xs={12} key={pump.id} className="mb-3">
+                <Card
+                  className={selectedPumps.has(pump.id) ? 'border-primary' : ''}
                 >
-                  <td>
+                  <Card.Body>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <Card.Title className="h6 mb-0">{pump.name}</Card.Title>
+                      <Form.Check
+                        type="checkbox"
+                        checked={selectedPumps.has(pump.id)}
+                        onChange={e =>
+                          handleRowSelect(pump.id, e.target.checked)
+                        }
+                        disabled={loading}
+                      />
+                    </div>
+                    <Card.Text className="mb-2">
+                      <small className="text-muted">
+                        <strong>Type:</strong> {pump.type} |{' '}
+                        <strong>Area:</strong> {pump.areaBlock}
+                      </small>
+                    </Card.Text>
+                    <Card.Text className="mb-0">
+                      <small>
+                        <strong>Flow Rate:</strong> {formatValue(pump.flowRate)}{' '}
+                        |<strong> Pressure:</strong>{' '}
+                        {formatValue(pump.currentPressure)}
+                      </small>
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+      </div>
+
+      {/* Desktop Table View - Hidden on small screens */}
+      <Row className="d-none d-md-block">
+        <Col xs={12}>
+          <div className="table-responsive">
+            <Table striped hover className="mb-0">
+              <thead className="table-dark">
+                <tr>
+                  <th scope="col" className="align-middle">
                     <Form.Check
                       type="checkbox"
-                      checked={selectedPumps.has(pump.id)}
-                      onChange={e => handleRowSelect(pump.id, e.target.checked)}
-                      disabled={loading}
+                      checked={isAllSelected}
+                      ref={input => {
+                        if (input) input.indeterminate = isIndeterminate;
+                      }}
+                      onChange={e => handleSelectAll(e.target.checked)}
+                      disabled={loading || pumps.length === 0}
+                      title={isAllSelected ? 'Deselect all' : 'Select all'}
                     />
-                  </td>
+                  </th>
                   {columns.map(column => (
-                    <td key={column.key}>
-                      {formatValue(pump[column.key as keyof PumpDevice])}
-                    </td>
+                    <th
+                      key={column.key}
+                      scope="col"
+                      className={`align-middle ${getResponsiveClass(column.responsive)}`}
+                    >
+                      {column.label}
+                    </th>
                   ))}
                 </tr>
-              ))}
-              {pumps.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={columns.length + 1}
-                    className="text-center text-muted py-4"
+              </thead>
+              <tbody>
+                {pumps.map(pump => (
+                  <tr
+                    key={pump.id}
+                    className={selectedPumps.has(pump.id) ? 'table-active' : ''}
                   >
-                    No pumps found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+                    <td className="align-middle">
+                      <Form.Check
+                        type="checkbox"
+                        checked={selectedPumps.has(pump.id)}
+                        onChange={e =>
+                          handleRowSelect(pump.id, e.target.checked)
+                        }
+                        disabled={loading}
+                      />
+                    </td>
+                    {columns.map(column => (
+                      <td
+                        key={column.key}
+                        className={`align-middle ${getResponsiveClass(column.responsive)}`}
+                      >
+                        {formatValue(pump[column.key as keyof PumpDevice])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                {pumps.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={columns.length + 1}
+                      className="text-center text-muted py-4 align-middle"
+                    >
+                      No pumps found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </div>
         </Col>
       </Row>
 

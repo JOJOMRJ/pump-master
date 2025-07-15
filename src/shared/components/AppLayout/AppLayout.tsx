@@ -4,7 +4,7 @@ interface AppLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-// 主布局容器
+// Main layout container
 export const AppLayout: React.FC<AppLayoutProps> = ({
   children,
   className = '',
@@ -25,7 +25,7 @@ interface AppHeaderProps extends React.HTMLAttributes<HTMLElement> {
   children: React.ReactNode;
 }
 
-// 头部区域（固定高度）
+// Header area (fixed height)
 export const AppHeader: React.FC<AppHeaderProps> = ({
   children,
   className = '',
@@ -43,7 +43,7 @@ interface AppMainProps extends React.HTMLAttributes<HTMLElement> {
   centered?: boolean;
 }
 
-// 主内容区域（自适应高度）
+// Main content area (adaptive height)
 export const AppMain: React.FC<AppMainProps> = ({
   children,
   className = '',
@@ -69,7 +69,7 @@ interface PageContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   fluid?: boolean;
 }
 
-// 页面容器（用于包装具体页面内容）
+// Page container (for wrapping specific page content)
 export const PageContainer: React.FC<PageContainerProps> = ({
   children,
   fluid = false,
@@ -90,7 +90,7 @@ interface CenteredContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   maxWidth?: string;
 }
 
-// 居中容器（用于登录页面等需要居中的内容）
+// Center container (for login page and other content that needs centering)
 export const CenteredContainer: React.FC<CenteredContainerProps> = ({
   children,
   className = '',

@@ -7,15 +7,15 @@ export interface PumpDevice {
   longitude: number; // -118.2437
   flowRate: {
     value: number; // 1000, 800, 600, etc.
-    unit: 'GPM'; // 固定单位 GPM
+    unit: 'GPM'; // Fixed unit GPM
   };
   offset: {
     value: number; // 5, 3, 2, 1, 0, 6, 4
-    unit: 'sec' | 'ft'; // sec 或 ft
+    unit: 'sec'; // sec only
   };
   currentPressure: {
     value: number; // 150, 130, 110, etc.
-    unit: 'psi'; // 固定单位 psi
+    unit: 'psi'; // Fixed unit psi
   };
   minPressure: {
     value: number; // 120, 100, 80, etc.
