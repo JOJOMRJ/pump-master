@@ -8,15 +8,28 @@ vi.mock('../../services/mockPumpService', () => ({
   mockPumpService: {
     getPumps: vi.fn(),
     deletePumps: vi.fn(),
+    getFilterOptions: vi.fn(),
   },
 }));
 
 const mockGetPumps = mockPumpService.getPumps as ReturnType<typeof vi.fn>;
 const mockDeletePumps = mockPumpService.deletePumps as ReturnType<typeof vi.fn>;
+const mockGetFilterOptions = mockPumpService.getFilterOptions as ReturnType<
+  typeof vi.fn
+>;
 
 describe('PumpsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Default mock for getFilterOptions
+    mockGetFilterOptions.mockResolvedValue({
+      success: true,
+      data: {
+        types: ['Centrifugal', 'Submersible'],
+        areas: ['Area A', 'Area B'],
+      },
+    });
   });
 
   it('should render loading state initially', () => {

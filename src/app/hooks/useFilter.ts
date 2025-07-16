@@ -39,7 +39,8 @@ export interface UseFilterReturn {
 
 export const useFilter = <T>(
   data: T[],
-  extractors: FilterExtractors<T>
+  extractors: FilterExtractors<T>,
+  staticOptions?: FilterOptions
 ): UseFilterReturn => {
   const [filterMode, setFilterMode] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -47,12 +48,16 @@ export const useFilter = <T>(
     areas: new Set(),
   });
 
-  // 从数据中提取筛选选项
+  // 从数据中提取筛选选项 - 使用staticOptions如果提供了，否则从data中提取
   const filterOptions = useMemo(() => {
+    if (staticOptions) {
+      return staticOptions;
+    }
+
     const types = new Set<string>();
     const areas = new Set<string>();
 
-    data.forEach(item => {
+    data.forEach((item: T) => {
       const type = extractors.types(item);
       const area = extractors.areas(item);
 
@@ -64,7 +69,7 @@ export const useFilter = <T>(
       types: Array.from(types).sort(),
       areas: Array.from(areas).sort(),
     };
-  }, [data, extractors]);
+  }, [staticOptions, data, extractors]);
 
   // Computed values
   const hasActiveFilters = useMemo(() => {

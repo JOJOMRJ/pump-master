@@ -265,6 +265,39 @@ export const deletePumps = async (
   }
 };
 
+// Get all available filter options
+export const getFilterOptions = async (): Promise<
+  PumpServiceResponse<{ types: string[]; areas: string[] }>
+> => {
+  try {
+    await simulateDelay(); // Shorter delay for filter options
+
+    const types = new Set<string>();
+    const areas = new Set<string>();
+
+    MOCK_PUMPS.forEach(pump => {
+      if (pump.type) types.add(pump.type);
+      if (pump.areaBlock) areas.add(pump.areaBlock);
+    });
+
+    return {
+      success: true,
+      data: {
+        types: Array.from(types).sort(),
+        areas: Array.from(areas).sort(),
+      },
+    };
+  } catch {
+    return {
+      success: false,
+      error: {
+        code: 'FETCH_ERROR',
+        message: 'Failed to fetch filter options',
+      },
+    };
+  }
+};
+
 // Default export containing all methods
 export const mockPumpService = {
   getPumps,
@@ -272,4 +305,5 @@ export const mockPumpService = {
   searchPumps,
   filterPumps,
   deletePumps,
+  getFilterOptions,
 };

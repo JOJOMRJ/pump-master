@@ -15,15 +15,26 @@ import {
 export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterOptions, setFilterOptions] = useState<{
+    types: string[];
+    areas: string[];
+  }>({
+    types: [],
+    areas: [],
+  });
 
   // Pagination management
   const pagination = usePagination(10);
 
   // Filter management
-  const filter = useFilter(pumps, {
-    types: pump => pump.type,
-    areas: pump => pump.areaBlock,
-  });
+  const filter = useFilter(
+    pumps,
+    {
+      types: pump => pump.type,
+      areas: pump => pump.areaBlock,
+    },
+    filterOptions
+  );
   const [deleteMode, setDeleteMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
@@ -85,6 +96,22 @@ export const PumpsPage: React.FC = () => {
     filter.filters.types,
     filter.filters.areas,
   ]);
+
+  // Fetch filter options on component mount
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await mockPumpService.getFilterOptions();
+        if (response.success && response.data) {
+          setFilterOptions(response.data);
+        }
+      } catch (err) {
+        console.error('Error fetching filter options:', err);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
 
   // Event handlers
   const handleNewPump = () => {
