@@ -1,6 +1,14 @@
 import React from 'react';
-import { Table, Form, Row, Col, Pagination, Card } from 'react-bootstrap';
-import type { PumpDevice, PaginationMeta } from '../../../../types';
+import {
+  Table,
+  Form,
+  Row,
+  Col,
+  Pagination,
+  Card,
+  Dropdown,
+} from 'react-bootstrap';
+import type { PumpDevice } from '../../../../types';
 
 interface PumpsTableProps {
   pumps: PumpDevice[];
@@ -10,8 +18,12 @@ interface PumpsTableProps {
   onSelectionChange: (selectedIds: Set<string>) => void;
   onPumpEdit?: (pumpId: string) => void;
   loading?: boolean;
-  pagination: PaginationMeta;
+  currentPage: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
   onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export const PumpsTable: React.FC<PumpsTableProps> = ({
@@ -22,8 +34,12 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
   onSelectionChange,
   onPumpEdit,
   loading = false,
-  pagination,
+  currentPage,
+  pageSize,
+  total,
+  totalPages,
   onPageChange,
+  onPageSizeChange,
 }) => {
   // Column configuration with responsive display control
   const columns = [
@@ -107,22 +123,15 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
     selectedPumps.size > 0 && selectedPumps.size < pumps.length;
 
   // Calculate pagination info
-  const totalPages = pagination.totalPages;
-  const startItem = (pagination.page - 1) * pagination.pageSize + 1;
-  const endItem = Math.min(
-    pagination.page * pagination.pageSize,
-    pagination.total
-  );
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, total);
 
   // Generate pagination items
   const getPaginationItems = () => {
     const items = [];
     const maxVisiblePages = 5;
 
-    let startPage = Math.max(
-      1,
-      pagination.page - Math.floor(maxVisiblePages / 2)
-    );
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
@@ -133,7 +142,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
       items.push(
         <Pagination.Item
           key={page}
-          active={page === pagination.page}
+          active={page === currentPage}
           onClick={() => onPageChange?.(page)}
         >
           {page}
@@ -299,16 +308,46 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
       {/* Summary and Pagination */}
       <Row className="mt-3">
         <Col xs={12} md={6}>
-          <div className="text-muted">
-            {pagination.total > 0 ? (
-              <>
-                Showing {startItem}-{endItem} of {pagination.total} pumps
-                {deleteMode && selectedPumps.size > 0 && (
-                  <span className="ms-2">• {selectedPumps.size} selected</span>
-                )}
-              </>
-            ) : (
-              'No pumps found'
+          <div className="d-flex align-items-center gap-3">
+            <div className="text-muted">
+              {total > 0 ? (
+                <>
+                  Showing {startItem}-{endItem} of {total} pumps
+                  {deleteMode && selectedPumps.size > 0 && (
+                    <span className="ms-2">
+                      • {selectedPumps.size} selected
+                    </span>
+                  )}
+                </>
+              ) : (
+                'No pumps found'
+              )}
+            </div>
+            {onPageSizeChange && (
+              <div className="d-flex align-items-center gap-2">
+                <span className="text-muted small">Show:</span>
+                <Dropdown>
+                  <Dropdown.Toggle
+                    variant="outline-secondary"
+                    size="sm"
+                    className="border-0 text-primary"
+                    style={{ minWidth: '60px' }}
+                  >
+                    {pageSize}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {[10, 20, 50, 100].map(size => (
+                      <Dropdown.Item
+                        key={size}
+                        active={size === pageSize}
+                        onClick={() => onPageSizeChange(size)}
+                      >
+                        {size}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
             )}
           </div>
         </Col>
@@ -317,20 +356,20 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
             <Pagination className="mb-0">
               <Pagination.First
                 onClick={() => onPageChange?.(1)}
-                disabled={pagination.page === 1}
+                disabled={currentPage === 1}
               />
               <Pagination.Prev
-                onClick={() => onPageChange?.(pagination.page - 1)}
-                disabled={pagination.page === 1}
+                onClick={() => onPageChange?.(currentPage - 1)}
+                disabled={currentPage === 1}
               />
               {getPaginationItems()}
               <Pagination.Next
-                onClick={() => onPageChange?.(pagination.page + 1)}
-                disabled={pagination.page === totalPages}
+                onClick={() => onPageChange?.(currentPage + 1)}
+                disabled={currentPage === totalPages}
               />
               <Pagination.Last
                 onClick={() => onPageChange?.(totalPages)}
-                disabled={pagination.page === totalPages}
+                disabled={currentPage === totalPages}
               />
             </Pagination>
           </Col>

@@ -111,7 +111,7 @@ describe('PumpsPage', () => {
       expect(screen.getByText('New Pump')).toBeInTheDocument();
       expect(screen.getByText('Delete')).toBeInTheDocument();
       // Check that toolbar buttons exist (they use icons, not text)
-      expect(screen.getAllByRole('button')).toHaveLength(5); // New Pump + 3 icon buttons + Delete
+      expect(screen.getAllByRole('button')).toHaveLength(6); // New Pump + 3 icon buttons + Delete + PageSize
     });
   });
 
