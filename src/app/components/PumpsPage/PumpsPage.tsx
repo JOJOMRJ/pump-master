@@ -100,13 +100,11 @@ export const PumpsPage: React.FC = () => {
     console.log('New Pump clicked');
   };
 
-  const handleEnterEditMode = () => {
-    setEditMode(true);
-    setDeleteMode(false); // Exit delete mode if active
-  };
-
-  const handleExitEditMode = () => {
-    setEditMode(false);
+  const handleToggleEditMode = () => {
+    setEditMode(!editMode);
+    if (!editMode) {
+      setDeleteMode(false); // Exit delete mode if entering edit mode
+    }
   };
 
   const handleEnterDeleteMode = () => {
@@ -222,8 +220,7 @@ export const PumpsPage: React.FC = () => {
         onDelete={handleDelete}
         onEnterDeleteMode={handleEnterDeleteMode}
         onExitDeleteMode={handleExitDeleteMode}
-        onEnterEditMode={handleEnterEditMode}
-        onExitEditMode={handleExitEditMode}
+        onToggleEditMode={handleToggleEditMode}
         onClearFilters={filter.clearFilters}
       />
 

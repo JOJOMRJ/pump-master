@@ -28,8 +28,7 @@ interface PumpsToolbarProps {
   onDelete?: () => void;
   onEnterDeleteMode?: () => void;
   onExitDeleteMode?: () => void;
-  onEnterEditMode?: () => void;
-  onExitEditMode?: () => void;
+  onToggleEditMode?: () => void;
   onClearFilters?: () => void;
 }
 
@@ -44,8 +43,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   onDelete,
   onEnterDeleteMode,
   onExitDeleteMode,
-  onEnterEditMode,
-  onExitEditMode,
+  onToggleEditMode,
   onClearFilters,
 }) => {
   const { deleteMode, editMode, loading } = uiState;
@@ -55,7 +53,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
       <Col xs={12}>
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex gap-2">
-            {!deleteMode && !editMode && (
+            {!deleteMode && (
               <>
                 <div className="d-flex align-items-center gap-1">
                   <Button
@@ -114,11 +112,11 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
                   </Button>
                 )}
                 <Button
-                  variant="outline-secondary"
+                  variant={editMode ? 'primary' : 'outline-secondary'}
                   className="border-0"
-                  onClick={onEnterEditMode}
+                  onClick={onToggleEditMode}
                   disabled={loading}
-                  title="Enter edit mode"
+                  title={editMode ? 'Exit edit mode' : 'Enter edit mode'}
                 >
                   <TiPencil />
                 </Button>
@@ -126,26 +124,18 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
             )}
           </div>
           <div className="d-flex gap-2">
-            {!deleteMode && !editMode && (
+            {!deleteMode && (
               <Button
                 variant="danger"
                 style={{ display: 'flex', alignItems: 'center' }}
                 onClick={onEnterDeleteMode}
-                disabled={loading}
-                title="Enter delete mode"
+                disabled={loading || editMode}
+                title={
+                  editMode ? 'Exit edit mode to delete' : 'Enter delete mode'
+                }
               >
                 <RiDeleteBin5Fill className="me-1" />
                 <span>Delete</span>
-              </Button>
-            )}
-            {editMode && (
-              <Button
-                variant="secondary"
-                onClick={onExitEditMode}
-                disabled={loading}
-                title="Exit edit mode"
-              >
-                Cancel
               </Button>
             )}
             {deleteMode && (
