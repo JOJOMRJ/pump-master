@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Row, Col } from 'react-bootstrap';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
-import { IoSearch } from 'react-icons/io5';
+import { IoSearch, IoClose } from 'react-icons/io5';
 import { HiOutlineFilter } from 'react-icons/hi';
 import { TiPencil } from 'react-icons/ti';
 
@@ -9,6 +9,7 @@ interface PumpsToolbarProps {
   selectedCount?: number;
   deleteMode?: boolean;
   editMode?: boolean;
+  searchQuery?: string;
   onSearch?: () => void;
   onFilter?: () => void;
   onEdit?: () => void;
@@ -17,6 +18,7 @@ interface PumpsToolbarProps {
   onExitDeleteMode?: () => void;
   onEnterEditMode?: () => void;
   onExitEditMode?: () => void;
+  onClearSearch?: () => void;
   disabled?: boolean;
 }
 
@@ -24,6 +26,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   selectedCount = 0,
   deleteMode = false,
   editMode = false,
+  searchQuery = '',
   onSearch,
   onFilter,
   onDelete,
@@ -31,6 +34,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   onExitDeleteMode,
   onEnterEditMode,
   onExitEditMode,
+  onClearSearch,
   disabled = false,
 }) => {
   return (
@@ -40,15 +44,33 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
           <div className="d-flex gap-2">
             {!deleteMode && !editMode && (
               <>
-                <Button
-                  variant="outline-secondary"
-                  className="border-0"
-                  onClick={onSearch}
-                  disabled={disabled}
-                  title="Search pumps"
-                >
-                  <IoSearch />
-                </Button>
+                <div className="d-flex align-items-center gap-1">
+                  <Button
+                    variant={searchQuery ? 'primary' : 'outline-secondary'}
+                    className="border-0"
+                    onClick={onSearch}
+                    disabled={disabled}
+                    title={
+                      searchQuery
+                        ? `Searching: "${searchQuery}"`
+                        : 'Search pumps'
+                    }
+                  >
+                    <IoSearch />
+                  </Button>
+                  {searchQuery && (
+                    <Button
+                      variant="outline-secondary"
+                      size="sm"
+                      className="border-0"
+                      onClick={onClearSearch}
+                      disabled={disabled}
+                      title="Clear search"
+                    >
+                      <IoClose />
+                    </Button>
+                  )}
+                </div>
                 <Button
                   variant="outline-secondary"
                   className="border-0"

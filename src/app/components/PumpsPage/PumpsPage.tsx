@@ -3,7 +3,12 @@ import { Container } from 'react-bootstrap';
 import type { PumpDevice } from '../../types/PumpDevice';
 import { mockPumpService } from '../../services/mockPumpService';
 import { Loading } from '../../../shared/components';
-import { PageHeader, PumpsToolbar, PumpsTable } from './components';
+import {
+  PageHeader,
+  PumpsToolbar,
+  PumpsTable,
+  SearchModal,
+} from './components';
 
 export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
@@ -13,12 +18,20 @@ export const PumpsPage: React.FC = () => {
   const [pageSize] = useState(10);
   const [deleteMode, setDeleteMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchPumps = async () => {
       try {
         setLoading(true);
-        const response = await mockPumpService.getPumps();
+        let response;
+
+        if (searchQuery.trim()) {
+          response = await mockPumpService.searchPumps(searchQuery);
+        } else {
+          response = await mockPumpService.getPumps();
+        }
 
         if (!response.success || !response.data) {
           console.error('Failed to load pumps:', response.error);
@@ -36,7 +49,7 @@ export const PumpsPage: React.FC = () => {
     };
 
     fetchPumps();
-  }, []);
+  }, [searchQuery]);
 
   // Event handlers
   const handleNewPump = () => {
@@ -44,7 +57,22 @@ export const PumpsPage: React.FC = () => {
   };
 
   const handleSearch = () => {
-    console.log('Search clicked');
+    setShowSearchModal(true);
+  };
+
+  const handleSearchSubmit = (query: string) => {
+    setSearchQuery(query);
+    setShowSearchModal(false);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handleSearchCancel = () => {
+    setShowSearchModal(false);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setCurrentPage(1);
   };
 
   const handleFilter = () => {
@@ -144,6 +172,7 @@ export const PumpsPage: React.FC = () => {
         selectedCount={selectedPumps.size}
         deleteMode={deleteMode}
         editMode={editMode}
+        searchQuery={searchQuery}
         onSearch={handleSearch}
         onFilter={handleFilter}
         onEdit={handleEdit}
@@ -152,6 +181,7 @@ export const PumpsPage: React.FC = () => {
         onExitDeleteMode={handleExitDeleteMode}
         onEnterEditMode={handleEnterEditMode}
         onExitEditMode={handleExitEditMode}
+        onClearSearch={handleClearSearch}
         disabled={loading}
       />
 
@@ -168,6 +198,14 @@ export const PumpsPage: React.FC = () => {
         pageSize={pageSize}
         totalItems={totalItems}
         onPageChange={handlePageChange}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        show={showSearchModal}
+        currentQuery={searchQuery}
+        onSubmit={handleSearchSubmit}
+        onCancel={handleSearchCancel}
       />
     </Container>
   );
