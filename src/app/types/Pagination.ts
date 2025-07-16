@@ -1,8 +1,15 @@
+// Filter parameters
+export interface FilterParams {
+  types?: string[];
+  areas?: string[];
+}
+
 // Pagination request parameters
 export interface PaginationParams {
   page: number;
   pageSize: number;
   searchQuery?: string;
+  filters?: FilterParams;
 }
 
 // Pagination response metadata

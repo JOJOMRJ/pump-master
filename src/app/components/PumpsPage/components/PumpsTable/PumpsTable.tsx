@@ -9,14 +9,21 @@ import {
   Dropdown,
 } from 'react-bootstrap';
 import type { PumpDevice } from '../../../../types';
+import type { FilterState, FilterOptions } from '../../../../hooks';
+import { FilterDropdown } from './components';
 
 interface PumpsTableProps {
   pumps: PumpDevice[];
   selectedPumps: Set<string>;
   deleteMode?: boolean;
   editMode?: boolean;
+  filterMode?: boolean;
+  filterOptions?: FilterOptions;
+  filters?: FilterState;
   onSelectionChange: (selectedIds: Set<string>) => void;
   onPumpEdit?: (pumpId: string) => void;
+  onToggleTypeFilter?: (type: string) => void;
+  onToggleAreaFilter?: (area: string) => void;
   loading?: boolean;
   currentPage: number;
   pageSize: number;
@@ -31,8 +38,13 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
   selectedPumps,
   deleteMode = false,
   editMode = false,
+  filterMode = false,
+  filterOptions,
+  filters,
   onSelectionChange,
   onPumpEdit,
+  onToggleTypeFilter,
+  onToggleAreaFilter,
   loading = false,
   currentPage,
   pageSize,
@@ -253,7 +265,25 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
                       scope="col"
                       className={`align-middle ${getResponsiveClass(column.responsive)}`}
                     >
-                      {column.label}
+                      <div className="d-flex align-items-center justify-content-between">
+                        <span>{column.label}</span>
+                        {filterMode && column.key === 'type' && (
+                          <FilterDropdown
+                            filterType="type"
+                            options={filterOptions?.types || []}
+                            selectedValues={filters?.types || new Set()}
+                            onToggle={onToggleTypeFilter || (() => {})}
+                          />
+                        )}
+                        {filterMode && column.key === 'areaBlock' && (
+                          <FilterDropdown
+                            filterType="areaBlock"
+                            options={filterOptions?.areas || []}
+                            selectedValues={filters?.areas || new Set()}
+                            onToggle={onToggleAreaFilter || (() => {})}
+                          />
+                        )}
+                      </div>
                     </th>
                   ))}
                 </tr>

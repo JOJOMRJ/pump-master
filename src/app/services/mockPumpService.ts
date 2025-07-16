@@ -29,15 +29,32 @@ export const getPumps = async (
     const pageSize = params?.pageSize || 10;
     const searchQuery = params?.searchQuery?.trim() || '';
 
-    // Filter data based on search query
+    // Filter data based on search query and filters
     let filteredPumps = MOCK_PUMPS;
+
+    // Apply search filter
     if (searchQuery) {
-      filteredPumps = MOCK_PUMPS.filter(
+      filteredPumps = filteredPumps.filter(
         pump =>
           pump.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           pump.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
           pump.areaBlock.toLowerCase().includes(searchQuery.toLowerCase())
       );
+    }
+
+    // Apply filters
+    if (params?.filters) {
+      const { types, areas } = params.filters;
+
+      if (types && types.length > 0) {
+        filteredPumps = filteredPumps.filter(pump => types.includes(pump.type));
+      }
+
+      if (areas && areas.length > 0) {
+        filteredPumps = filteredPumps.filter(pump =>
+          areas.includes(pump.areaBlock)
+        );
+      }
     }
 
     // Calculate pagination

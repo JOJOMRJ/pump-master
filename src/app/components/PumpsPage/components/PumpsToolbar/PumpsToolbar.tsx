@@ -10,6 +10,9 @@ interface PumpsToolbarProps {
   deleteMode?: boolean;
   editMode?: boolean;
   searchQuery?: string;
+  filterMode?: boolean;
+  hasActiveFilters?: boolean;
+  activeFilterCount?: number;
   onSearch?: () => void;
   onFilter?: () => void;
   onEdit?: () => void;
@@ -19,6 +22,7 @@ interface PumpsToolbarProps {
   onEnterEditMode?: () => void;
   onExitEditMode?: () => void;
   onClearSearch?: () => void;
+  onClearFilters?: () => void;
   disabled?: boolean;
 }
 
@@ -27,6 +31,9 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   deleteMode = false,
   editMode = false,
   searchQuery = '',
+  filterMode = false,
+  hasActiveFilters = false,
+  activeFilterCount = 0,
   onSearch,
   onFilter,
   onDelete,
@@ -35,6 +42,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   onEnterEditMode,
   onExitEditMode,
   onClearSearch,
+  onClearFilters,
   disabled = false,
 }) => {
   return (
@@ -72,14 +80,34 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
                   )}
                 </div>
                 <Button
-                  variant="outline-secondary"
+                  variant={
+                    filterMode || hasActiveFilters
+                      ? 'primary'
+                      : 'outline-secondary'
+                  }
                   className="border-0"
                   onClick={onFilter}
                   disabled={disabled}
-                  title="Filter pumps"
+                  title={filterMode ? 'Exit filter mode' : 'Filter pumps'}
                 >
                   <HiOutlineFilter />
+                  {hasActiveFilters && (
+                    <span className="ms-1 badge bg-light text-dark">
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </Button>
+                {filterMode && hasActiveFilters && (
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={onClearFilters}
+                    disabled={disabled}
+                    title="Clear all filters"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
                 <Button
                   variant="outline-secondary"
                   className="border-0"

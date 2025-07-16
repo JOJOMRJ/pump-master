@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import type { PumpDevice } from '../../types';
 import { mockPumpService } from '../../services/mockPumpService';
+import { usePagination, useFilter } from '../../hooks';
 import { Loading } from '../../../shared/components';
 import {
   PageHeader,
@@ -14,13 +15,15 @@ export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPumps, setSelectedPumps] = useState<Set<string>>(new Set());
-  // User input states - control API requests
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
-  // Server response states - for UI display
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  // Pagination management
+  const pagination = usePagination(10);
+
+  // Filter management
+  const filter = useFilter(pumps, {
+    types: pump => pump.type,
+    areas: pump => pump.areaBlock,
+  });
   const [deleteMode, setDeleteMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -31,34 +34,41 @@ export const PumpsPage: React.FC = () => {
       try {
         setLoading(true);
         const response = await mockPumpService.getPumps({
-          page: currentPage,
-          pageSize,
+          page: pagination.currentPage,
+          pageSize: pagination.pageSize,
           searchQuery: searchQuery.trim() || undefined,
+          filters: filter.getFilterParams(),
         });
 
         if (!response.success || !response.data) {
           console.error('Failed to load pumps:', response.error);
           setPumps([]);
-          setTotal(0);
-          setTotalPages(0);
+          pagination.setTotal(0);
+          pagination.setTotalPages(0);
           return;
         }
 
         setPumps(response.data.data);
-        setTotal(response.data.pagination.total);
-        setTotalPages(response.data.pagination.totalPages);
+        pagination.setTotal(response.data.pagination.total);
+        pagination.setTotalPages(response.data.pagination.totalPages);
       } catch (err) {
         console.error('Error fetching pumps:', err);
         setPumps([]);
-        setTotal(0);
-        setTotalPages(0);
+        pagination.setTotal(0);
+        pagination.setTotalPages(0);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPumps();
-  }, [currentPage, pageSize, searchQuery]);
+  }, [
+    pagination.currentPage,
+    pagination.pageSize,
+    searchQuery,
+    filter.filters.types,
+    filter.filters.areas,
+  ]);
 
   // Event handlers
   const handleNewPump = () => {
@@ -72,7 +82,7 @@ export const PumpsPage: React.FC = () => {
   const handleSearchSubmit = (query: string) => {
     setSearchQuery(query);
     setShowSearchModal(false);
-    setCurrentPage(1); // Reset to first page when searching
+    pagination.handlePageChange(1); // Reset to first page when searching
   };
 
   const handleSearchCancel = () => {
@@ -81,11 +91,11 @@ export const PumpsPage: React.FC = () => {
 
   const handleClearSearch = () => {
     setSearchQuery('');
-    setCurrentPage(1);
+    pagination.handlePageChange(1);
   };
 
   const handleFilter = () => {
-    console.log('Filter clicked');
+    filter.toggleFilterMode();
   };
 
   const handleEdit = () => {
@@ -130,12 +140,12 @@ export const PumpsPage: React.FC = () => {
 
       // Calculate if we need to adjust current page
       const deletedCount = response.data.length;
-      const remainingItems = total - deletedCount;
-      const newTotalPages = Math.ceil(remainingItems / pageSize);
+      const remainingItems = pagination.total - deletedCount;
+      const newTotalPages = Math.ceil(remainingItems / pagination.pageSize);
 
       // If current page becomes empty, go to previous page or first page
-      if (currentPage > newTotalPages && newTotalPages > 0) {
-        setCurrentPage(newTotalPages);
+      if (pagination.currentPage > newTotalPages && newTotalPages > 0) {
+        pagination.handlePageChange(newTotalPages);
       } else {
         // Refresh current page data by triggering useEffect
         // This will happen automatically due to the state dependencies
@@ -157,14 +167,13 @@ export const PumpsPage: React.FC = () => {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    pagination.handlePageChange(page);
     // Clear current page selection state
     setSelectedPumps(new Set());
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1); // Reset to first page when changing page size
+    pagination.handlePageSizeChange(newPageSize);
     setSelectedPumps(new Set()); // Clear selections
   };
 
@@ -186,6 +195,9 @@ export const PumpsPage: React.FC = () => {
         deleteMode={deleteMode}
         editMode={editMode}
         searchQuery={searchQuery}
+        filterMode={filter.filterMode}
+        hasActiveFilters={filter.hasActiveFilters}
+        activeFilterCount={filter.activeFilterCount}
         onSearch={handleSearch}
         onFilter={handleFilter}
         onEdit={handleEdit}
@@ -195,6 +207,7 @@ export const PumpsPage: React.FC = () => {
         onEnterEditMode={handleEnterEditMode}
         onExitEditMode={handleExitEditMode}
         onClearSearch={handleClearSearch}
+        onClearFilters={filter.clearFilters}
         disabled={loading}
       />
 
@@ -204,13 +217,18 @@ export const PumpsPage: React.FC = () => {
         selectedPumps={selectedPumps}
         deleteMode={deleteMode}
         editMode={editMode}
+        filterMode={filter.filterMode}
+        filterOptions={filter.filterOptions}
+        filters={filter.filters}
         onSelectionChange={handleSelectionChange}
         onPumpEdit={handlePumpEdit}
+        onToggleTypeFilter={filter.toggleTypeFilter}
+        onToggleAreaFilter={filter.toggleAreaFilter}
         loading={loading}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        total={total}
-        totalPages={totalPages}
+        currentPage={pagination.currentPage}
+        pageSize={pagination.pageSize}
+        total={pagination.total}
+        totalPages={pagination.totalPages}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       />
