@@ -200,55 +200,47 @@ describe('PumpsPage', () => {
       });
     });
 
-    it('should show delete confirmation modal when delete button is clicked', async () => {
+    it('should enter delete mode and allow pump selection', async () => {
       render(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
       });
 
-      // Select a pump
-      const checkboxes = screen.getAllByRole('checkbox');
-      fireEvent.click(checkboxes[1]); // First pump checkbox (index 0 is select all)
-
-      // Click delete button
+      // Click delete button to enter delete mode
       const deleteButton = screen.getByRole('button', { name: /delete/i });
       fireEvent.click(deleteButton);
 
-      // Check if modal appears
+      // Should now see checkboxes and cancel button
       await waitFor(() => {
-        expect(screen.getByText('Confirm Delete')).toBeInTheDocument();
-        expect(
-          screen.getByText(/Are you sure you want to delete 1 selected pump/)
-        ).toBeInTheDocument();
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
+      expect(screen.getByText('Cancel')).toBeInTheDocument();
     });
 
-    it('should close modal when cancel is clicked', async () => {
+    it('should exit delete mode when cancel is clicked', async () => {
       render(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
       });
 
-      // Select a pump and open delete modal
-      const checkboxes = screen.getAllByRole('checkbox');
-      fireEvent.click(checkboxes[1]);
+      // Enter delete mode
       const deleteButton = screen.getByRole('button', { name: /delete/i });
       fireEvent.click(deleteButton);
 
-      // Wait for modal to appear
+      // Should see checkboxes
       await waitFor(() => {
-        expect(screen.getByText('Confirm Delete')).toBeInTheDocument();
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
 
       // Click cancel
-      const cancelButton = screen.getByRole('button', { name: /cancel/i });
+      const cancelButton = screen.getByText('Cancel');
       fireEvent.click(cancelButton);
 
-      // Check if modal is closed
+      // Should exit delete mode - no checkboxes visible
       await waitFor(() => {
-        expect(screen.queryByText('Confirm Delete')).not.toBeInTheDocument();
+        expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
       });
     });
 
@@ -275,28 +267,26 @@ describe('PumpsPage', () => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
       });
 
-      // Select a pump and delete - find the specific pump checkbox
-      const checkboxes = screen.getAllByRole('checkbox');
-      // In responsive design, we need to find the right checkbox
-      // The first checkbox after "select all" that corresponds to pump-002
-      fireEvent.click(checkboxes[1]);
-
-      // Wait for selection to be registered
-      await waitFor(() => {
-        const deleteButton = screen.getByRole('button', { name: /delete/i });
-        expect(deleteButton).not.toBeDisabled();
-      });
-
+      // Enter delete mode
       const deleteButton = screen.getByRole('button', { name: /delete/i });
       fireEvent.click(deleteButton);
 
-      // Confirm deletion
+      // Wait for checkboxes to appear
       await waitFor(() => {
-        expect(screen.getByText('Confirm Delete')).toBeInTheDocument();
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
 
-      const confirmButton = screen.getByRole('button', { name: /delete$/i });
-      fireEvent.click(confirmButton);
+      // Select a pump - first pump checkbox (index 1, after select all)
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[1]);
+
+      // Click delete button (now shows count)
+      await waitFor(() => {
+        const deleteButtonWithCount = screen.getByRole('button', {
+          name: /delete \(1\)/i,
+        });
+        fireEvent.click(deleteButtonWithCount);
+      });
 
       // Check if delete service was called with the correct pump ID
       await waitFor(() => {
@@ -304,7 +294,7 @@ describe('PumpsPage', () => {
       });
     });
 
-    it('should show error message when deletion fails', async () => {
+    it('should handle deletion failure gracefully', async () => {
       mockDeletePumps.mockResolvedValue({
         success: false,
         error: {
@@ -313,30 +303,46 @@ describe('PumpsPage', () => {
         },
       });
 
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       render(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
       });
 
-      // Select a pump and delete
-      const checkboxes = screen.getAllByRole('checkbox');
-      fireEvent.click(checkboxes[1]);
+      // Enter delete mode
       const deleteButton = screen.getByRole('button', { name: /delete/i });
       fireEvent.click(deleteButton);
 
-      // Confirm deletion
+      // Wait for checkboxes to appear
       await waitFor(() => {
-        expect(screen.getByText('Confirm Delete')).toBeInTheDocument();
+        expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
       });
 
-      const confirmButton = screen.getByRole('button', { name: /delete$/i });
-      fireEvent.click(confirmButton);
+      // Select a pump and delete
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[1]);
 
-      // Check if error message appears
+      // Click delete button
       await waitFor(() => {
-        expect(screen.getByText('Failed to delete pump')).toBeInTheDocument();
+        const deleteButtonWithCount = screen.getByRole('button', {
+          name: /delete \(1\)/i,
+        });
+        fireEvent.click(deleteButtonWithCount);
       });
+
+      // Check if error was logged to console
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Failed to delete pumps:',
+          'Failed to delete pump'
+        );
+      });
+
+      consoleSpy.mockRestore();
     });
   });
 });

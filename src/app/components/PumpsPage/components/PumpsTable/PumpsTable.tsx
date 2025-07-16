@@ -5,7 +5,10 @@ import type { PumpDevice } from '../../../../types/PumpDevice';
 interface PumpsTableProps {
   pumps: PumpDevice[];
   selectedPumps: Set<string>;
+  deleteMode?: boolean;
+  editMode?: boolean;
   onSelectionChange: (selectedIds: Set<string>) => void;
+  onPumpEdit?: (pumpId: string) => void;
   loading?: boolean;
   currentPage?: number;
   pageSize?: number;
@@ -16,7 +19,10 @@ interface PumpsTableProps {
 export const PumpsTable: React.FC<PumpsTableProps> = ({
   pumps,
   selectedPumps,
+  deleteMode = false,
+  editMode = false,
   onSelectionChange,
+  onPumpEdit,
   loading = false,
   currentPage = 1,
   pageSize = 10,
@@ -92,6 +98,13 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
     onSelectionChange(newSelection);
   };
 
+  // Handle row click in edit mode
+  const handleRowClick = (pumpId: string) => {
+    if (editMode && onPumpEdit) {
+      onPumpEdit(pumpId);
+    }
+  };
+
   // Calculate select all checkbox state
   const isAllSelected = pumps.length > 0 && selectedPumps.size === pumps.length;
   const isIndeterminate =
@@ -148,19 +161,29 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
             {pumps.map(pump => (
               <Col xs={12} key={pump.id} className="mb-3">
                 <Card
-                  className={selectedPumps.has(pump.id) ? 'border-primary' : ''}
+                  className={`${deleteMode && selectedPumps.has(pump.id) ? 'border-primary' : ''} ${editMode ? 'pump-card-clickable' : ''}`}
+                  onClick={() => handleRowClick(pump.id)}
+                  style={editMode ? { cursor: 'pointer' } : {}}
                 >
                   <Card.Body>
-                    <div className="d-flex justify-content-between align-items-start mb-2">
+                    <div
+                      className="d-flex justify-content-between align-items-center mb-2"
+                      style={{ minHeight: '24px' }}
+                    >
                       <Card.Title className="h6 mb-0">{pump.name}</Card.Title>
-                      <Form.Check
-                        type="checkbox"
-                        checked={selectedPumps.has(pump.id)}
-                        onChange={e =>
-                          handleRowSelect(pump.id, e.target.checked)
-                        }
-                        disabled={loading}
-                      />
+                      <div style={{ width: '24px' }}>
+                        {deleteMode && (
+                          <Form.Check
+                            type="checkbox"
+                            checked={selectedPumps.has(pump.id)}
+                            onChange={e =>
+                              handleRowSelect(pump.id, e.target.checked)
+                            }
+                            disabled={loading}
+                            onClick={e => e.stopPropagation()}
+                          />
+                        )}
+                      </div>
                     </div>
                     <Card.Text className="mb-2">
                       <small className="text-muted">
@@ -187,21 +210,32 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
       <Row className="d-none d-md-block">
         <Col xs={12}>
           <div className="table-responsive">
-            <Table striped hover className="mb-0">
+            <Table
+              striped
+              hover
+              className="mb-0"
+              style={{ tableLayout: 'fixed' }}
+            >
               <thead className="table-dark">
                 <tr>
-                  <th scope="col" className="align-middle">
-                    <Form.Check
-                      type="checkbox"
-                      checked={isAllSelected}
-                      ref={input => {
-                        if (input) input.indeterminate = isIndeterminate;
-                      }}
-                      onChange={e => handleSelectAll(e.target.checked)}
-                      disabled={loading || pumps.length === 0}
-                      title={isAllSelected ? 'Deselect all' : 'Select all'}
-                    />
-                  </th>
+                  {deleteMode && (
+                    <th
+                      scope="col"
+                      className="align-middle"
+                      style={{ width: '50px' }}
+                    >
+                      <Form.Check
+                        type="checkbox"
+                        checked={isAllSelected}
+                        ref={input => {
+                          if (input) input.indeterminate = isIndeterminate;
+                        }}
+                        onChange={e => handleSelectAll(e.target.checked)}
+                        disabled={loading || pumps.length === 0}
+                        title={isAllSelected ? 'Deselect all' : 'Select all'}
+                      />
+                    </th>
+                  )}
                   {columns.map(column => (
                     <th
                       key={column.key}
@@ -217,18 +251,23 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
                 {pumps.map(pump => (
                   <tr
                     key={pump.id}
-                    className={selectedPumps.has(pump.id) ? 'table-active' : ''}
+                    className={`${deleteMode && selectedPumps.has(pump.id) ? 'table-active' : ''} ${editMode ? 'pump-row-clickable' : ''}`}
+                    onClick={() => handleRowClick(pump.id)}
+                    style={editMode ? { cursor: 'pointer' } : {}}
                   >
-                    <td className="align-middle">
-                      <Form.Check
-                        type="checkbox"
-                        checked={selectedPumps.has(pump.id)}
-                        onChange={e =>
-                          handleRowSelect(pump.id, e.target.checked)
-                        }
-                        disabled={loading}
-                      />
-                    </td>
+                    {deleteMode && (
+                      <td className="align-middle" style={{ width: '50px' }}>
+                        <Form.Check
+                          type="checkbox"
+                          checked={selectedPumps.has(pump.id)}
+                          onChange={e =>
+                            handleRowSelect(pump.id, e.target.checked)
+                          }
+                          disabled={loading}
+                          onClick={e => e.stopPropagation()}
+                        />
+                      </td>
+                    )}
                     {columns.map(column => (
                       <td
                         key={column.key}
@@ -242,7 +281,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
                 {pumps.length === 0 && (
                   <tr>
                     <td
-                      colSpan={columns.length + 1}
+                      colSpan={columns.length + (deleteMode ? 1 : 0)}
                       className="text-center text-muted py-4 align-middle"
                     >
                       No pumps found
@@ -262,7 +301,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
             {totalItems > 0 ? (
               <>
                 Showing {startItem}-{endItem} of {totalItems} pumps
-                {selectedPumps.size > 0 && (
+                {deleteMode && selectedPumps.size > 0 && (
                   <span className="ms-2">• {selectedPumps.size} selected</span>
                 )}
               </>

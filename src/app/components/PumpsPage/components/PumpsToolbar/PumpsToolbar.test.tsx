@@ -8,39 +8,42 @@ describe('PumpsToolbar', () => {
     onFilter: vi.fn(),
     onEdit: vi.fn(),
     onDelete: vi.fn(),
+    onEnterEditMode: vi.fn(),
+    onExitEditMode: vi.fn(),
+    onEnterDeleteMode: vi.fn(),
+    onExitDeleteMode: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render all toolbar buttons', () => {
+  it('should render all toolbar buttons in default mode', () => {
     render(<PumpsToolbar {...mockHandlers} />);
 
     expect(screen.getByTitle('Search pumps')).toBeInTheDocument();
     expect(screen.getByTitle('Filter pumps')).toBeInTheDocument();
-    expect(screen.getByTitle('Edit selected pumps')).toBeInTheDocument();
+    expect(screen.getByTitle('Enter edit mode')).toBeInTheDocument();
     expect(screen.getByText(/Delete/)).toBeInTheDocument();
   });
 
-  it('should disable edit and delete buttons when no items selected', () => {
-    render(<PumpsToolbar selectedCount={0} {...mockHandlers} />);
+  it('should render edit mode UI', () => {
+    render(<PumpsToolbar editMode={true} {...mockHandlers} />);
 
-    expect(screen.getByTitle('Edit selected pumps')).toBeDisabled();
-    expect(screen.getByTitle('Select pumps to delete')).toBeDisabled();
+    expect(screen.queryByTitle('Search pumps')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Filter pumps')).not.toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
-  it('should enable edit and delete buttons when items selected', () => {
-    render(<PumpsToolbar selectedCount={3} {...mockHandlers} />);
+  it('should render delete mode UI', () => {
+    render(
+      <PumpsToolbar deleteMode={true} selectedCount={3} {...mockHandlers} />
+    );
 
-    expect(screen.getByTitle('Edit selected pumps')).not.toBeDisabled();
-    expect(screen.getByTitle('Delete 3 selected pump(s)')).not.toBeDisabled();
-  });
-
-  it('should show selected count in delete button', () => {
-    render(<PumpsToolbar selectedCount={5} {...mockHandlers} />);
-
-    expect(screen.getByText('Delete (5)')).toBeInTheDocument();
+    expect(screen.queryByTitle('Search pumps')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Filter pumps')).not.toBeInTheDocument();
+    expect(screen.getByTitle('Delete 3 selected pump(s)')).toBeInTheDocument();
+    expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
   it('should call onSearch when search button clicked', () => {
@@ -57,18 +60,18 @@ describe('PumpsToolbar', () => {
     expect(mockHandlers.onFilter).toHaveBeenCalledTimes(1);
   });
 
-  it('should call onEdit when edit button clicked and items selected', () => {
-    render(<PumpsToolbar selectedCount={2} {...mockHandlers} />);
+  it('should call onEnterEditMode when edit button clicked', () => {
+    render(<PumpsToolbar {...mockHandlers} />);
 
-    fireEvent.click(screen.getByTitle('Edit selected pumps'));
-    expect(mockHandlers.onEdit).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByTitle('Enter edit mode'));
+    expect(mockHandlers.onEnterEditMode).toHaveBeenCalledTimes(1);
   });
 
-  it('should call onDelete when delete button clicked and items selected', () => {
-    render(<PumpsToolbar selectedCount={1} {...mockHandlers} />);
+  it('should call onEnterDeleteMode when delete button clicked', () => {
+    render(<PumpsToolbar {...mockHandlers} />);
 
-    fireEvent.click(screen.getByTitle('Delete 1 selected pump(s)'));
-    expect(mockHandlers.onDelete).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByTitle('Enter delete mode'));
+    expect(mockHandlers.onEnterDeleteMode).toHaveBeenCalledTimes(1);
   });
 
   it('should disable all buttons when disabled prop is true', () => {
@@ -78,7 +81,7 @@ describe('PumpsToolbar', () => {
 
     expect(screen.getByTitle('Search pumps')).toBeDisabled();
     expect(screen.getByTitle('Filter pumps')).toBeDisabled();
-    expect(screen.getByTitle('Edit selected pumps')).toBeDisabled();
-    expect(screen.getByTitle('Delete 5 selected pump(s)')).toBeDisabled();
+    expect(screen.getByTitle('Enter edit mode')).toBeDisabled();
+    expect(screen.getByTitle('Enter delete mode')).toBeDisabled();
   });
 });
