@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
-import type { PumpDevice } from '../../types/PumpDevice';
+import type { PumpDevice, PaginationMeta } from '../../types';
 import { mockPumpService } from '../../services/mockPumpService';
 import { Loading } from '../../../shared/components';
 import {
@@ -16,6 +16,12 @@ export const PumpsPage: React.FC = () => {
   const [selectedPumps, setSelectedPumps] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 0,
+  });
   const [deleteMode, setDeleteMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -25,31 +31,42 @@ export const PumpsPage: React.FC = () => {
     const fetchPumps = async () => {
       try {
         setLoading(true);
-        let response;
-
-        if (searchQuery.trim()) {
-          response = await mockPumpService.searchPumps(searchQuery);
-        } else {
-          response = await mockPumpService.getPumps();
-        }
+        const response = await mockPumpService.getPumps({
+          page: currentPage,
+          pageSize,
+          searchQuery: searchQuery.trim() || undefined,
+        });
 
         if (!response.success || !response.data) {
           console.error('Failed to load pumps:', response.error);
           setPumps([]);
+          setPagination({
+            page: currentPage,
+            pageSize,
+            total: 0,
+            totalPages: 0,
+          });
           return;
         }
 
-        setPumps(response.data);
+        setPumps(response.data.data);
+        setPagination(response.data.pagination);
       } catch (err) {
         console.error('Error fetching pumps:', err);
         setPumps([]);
+        setPagination({
+          page: currentPage,
+          pageSize,
+          total: 0,
+          totalPages: 0,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchPumps();
-  }, [searchQuery]);
+  }, [currentPage, pageSize, searchQuery]);
 
   // Event handlers
   const handleNewPump = () => {
@@ -115,20 +132,21 @@ export const PumpsPage: React.FC = () => {
         return;
       }
 
-      // Refresh pump list
-      const pumpsResponse = await mockPumpService.getPumps();
-      if (pumpsResponse.success && pumpsResponse.data) {
-        setPumps(pumpsResponse.data);
-      }
-
       // Clear selection and exit delete mode
       setSelectedPumps(new Set());
       setDeleteMode(false);
 
-      // Reset to first page if current page is empty
-      const totalPages = Math.ceil(pumpsResponse.data?.length || 0 / pageSize);
-      if (currentPage > totalPages && totalPages > 0) {
-        setCurrentPage(1);
+      // Calculate if we need to adjust current page
+      const deletedCount = response.data.length;
+      const remainingItems = pagination.total - deletedCount;
+      const newTotalPages = Math.ceil(remainingItems / pageSize);
+
+      // If current page becomes empty, go to previous page or first page
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else {
+        // Refresh current page data by triggering useEffect
+        // This will happen automatically due to the pagination dependency
       }
 
       console.log(`Successfully deleted ${response.data.length} pump(s)`);
@@ -152,11 +170,8 @@ export const PumpsPage: React.FC = () => {
     setSelectedPumps(new Set());
   };
 
-  // Calculate pagination info
-  const totalItems = pumps.length;
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentPagePumps = pumps.slice(startIndex, endIndex);
+  // Server-side pagination - no need to slice data
+  const currentPagePumps = pumps;
 
   if (loading) {
     return <Loading />;
@@ -194,9 +209,7 @@ export const PumpsPage: React.FC = () => {
         onSelectionChange={handleSelectionChange}
         onPumpEdit={handlePumpEdit}
         loading={loading}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        totalItems={totalItems}
+        pagination={pagination}
         onPageChange={handlePageChange}
       />
 

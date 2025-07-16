@@ -46,7 +46,15 @@ describe('PumpsPage', () => {
 
     mockGetPumps.mockResolvedValue({
       success: true,
-      data: mockPumps,
+      data: {
+        data: mockPumps,
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: mockPumps.length,
+          totalPages: 1,
+        },
+      },
     });
 
     render(<PumpsPage />);
@@ -85,7 +93,15 @@ describe('PumpsPage', () => {
   it('should render page header and toolbar', async () => {
     mockGetPumps.mockResolvedValue({
       success: true,
-      data: [],
+      data: {
+        data: [],
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+        },
+      },
     });
 
     render(<PumpsPage />);
@@ -102,7 +118,15 @@ describe('PumpsPage', () => {
   it('should render table headers', async () => {
     mockGetPumps.mockResolvedValue({
       success: true,
-      data: [],
+      data: {
+        data: [],
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+        },
+      },
     });
 
     render(<PumpsPage />);
@@ -153,7 +177,15 @@ describe('PumpsPage', () => {
 
     mockGetPumps.mockResolvedValue({
       success: true,
-      data: mockPumps,
+      data: {
+        data: mockPumps,
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: mockPumps.length,
+          totalPages: 1,
+        },
+      },
     });
 
     render(<PumpsPage />);
@@ -196,7 +228,15 @@ describe('PumpsPage', () => {
     beforeEach(() => {
       mockGetPumps.mockResolvedValue({
         success: true,
-        data: mockPumps,
+        data: {
+          data: mockPumps,
+          pagination: {
+            page: 1,
+            pageSize: 10,
+            total: mockPumps.length,
+            totalPages: 1,
+          },
+        },
       });
     });
 
@@ -254,11 +294,27 @@ describe('PumpsPage', () => {
       mockGetPumps
         .mockResolvedValueOnce({
           success: true,
-          data: mockPumps,
+          data: {
+            data: mockPumps,
+            pagination: {
+              page: 1,
+              pageSize: 10,
+              total: mockPumps.length,
+              totalPages: 1,
+            },
+          },
         })
         .mockResolvedValueOnce({
           success: true,
-          data: [mockPumps[0]], // Only first pump remains
+          data: {
+            data: [mockPumps[0]], // Only first pump remains
+            pagination: {
+              page: 1,
+              pageSize: 10,
+              total: 1,
+              totalPages: 1,
+            },
+          },
         });
 
       render(<PumpsPage />);

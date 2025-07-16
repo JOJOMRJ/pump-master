@@ -1,4 +1,4 @@
-import type { PumpDevice } from '../types/PumpDevice';
+import type { PumpDevice, PaginationParams, PaginatedResponse } from '../types';
 import { MOCK_PUMPS } from './data/mockPumps';
 
 // Simple network delay simulation
@@ -17,17 +17,47 @@ interface PumpServiceResponse<T> {
   };
 }
 
-// Get all pumps
-export const getPumps = async (): Promise<
-  PumpServiceResponse<PumpDevice[]>
-> => {
+// Get pumps with pagination
+export const getPumps = async (
+  params?: PaginationParams
+): Promise<PumpServiceResponse<PaginatedResponse<PumpDevice>>> => {
   try {
-    // Simulate network delay
     await simulateDelay();
+
+    // Default pagination params
+    const page = params?.page || 1;
+    const pageSize = params?.pageSize || 10;
+    const searchQuery = params?.searchQuery?.trim() || '';
+
+    // Filter data based on search query
+    let filteredPumps = MOCK_PUMPS;
+    if (searchQuery) {
+      filteredPumps = MOCK_PUMPS.filter(
+        pump =>
+          pump.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          pump.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          pump.areaBlock.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Calculate pagination
+    const total = filteredPumps.length;
+    const totalPages = Math.ceil(total / pageSize);
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = filteredPumps.slice(startIndex, endIndex);
 
     return {
       success: true,
-      data: MOCK_PUMPS,
+      data: {
+        data: paginatedData,
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages,
+        },
+      },
     };
   } catch {
     return {
@@ -74,23 +104,30 @@ export const getPumpById = async (
   }
 };
 
-// Search pumps by name
+// Legacy search function - now handled by getPumps with params
 export const searchPumps = async (
   query: string
 ): Promise<PumpServiceResponse<PumpDevice[]>> => {
   try {
-    await simulateDelay();
+    const result = await getPumps({
+      page: 1,
+      pageSize: 1000,
+      searchQuery: query,
+    });
 
-    const filteredPumps = MOCK_PUMPS.filter(
-      pump =>
-        pump.name.toLowerCase().includes(query.toLowerCase()) ||
-        pump.type.toLowerCase().includes(query.toLowerCase()) ||
-        pump.areaBlock.toLowerCase().includes(query.toLowerCase())
-    );
+    if (!result.success || !result.data) {
+      return {
+        success: false,
+        error: result.error || {
+          code: 'SEARCH_ERROR',
+          message: 'Search failed',
+        },
+      };
+    }
 
     return {
       success: true,
-      data: filteredPumps,
+      data: result.data.data,
     };
   } catch {
     return {
