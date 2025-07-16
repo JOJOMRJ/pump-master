@@ -1,6 +1,5 @@
 import React from 'react';
 import { Dropdown, Form } from 'react-bootstrap';
-import { IoChevronDown } from 'react-icons/io5';
 
 interface FilterDropdownProps {
   filterType: 'type' | 'areaBlock';
@@ -33,9 +32,7 @@ export const FilterDropdown: React.FC<FilterDropdownProps> = ({
         size="sm"
         className="p-0 border-0 text-light"
         style={{ fontSize: '0.8rem' }}
-      >
-        <IoChevronDown />
-      </Dropdown.Toggle>
+      ></Dropdown.Toggle>
       <Dropdown.Menu>
         <div className="px-3 py-2" style={{ minWidth: '200px' }}>
           <div className="fw-bold mb-2">{getTitle()}</div>

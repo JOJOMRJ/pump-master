@@ -98,10 +98,6 @@ export const PumpsPage: React.FC = () => {
     filter.toggleFilterMode();
   };
 
-  const handleEdit = () => {
-    console.log('Edit clicked, selected:', selectedPumps.size);
-  };
-
   const handleEnterEditMode = () => {
     setEditMode(true);
     setDeleteMode(false); // Exit delete mode if active
@@ -184,6 +180,14 @@ export const PumpsPage: React.FC = () => {
     return <Loading />;
   }
 
+  // State object aggregation
+  const uiState = { deleteMode, editMode, loading };
+  const searchState = {
+    searchQuery,
+    onSearch: handleSearch,
+    onClearSearch: handleClearSearch,
+  };
+
   return (
     <Container>
       {/* Page Header */}
@@ -192,31 +196,25 @@ export const PumpsPage: React.FC = () => {
       {/* Toolbar */}
       <PumpsToolbar
         selectedCount={selectedPumps.size}
-        deleteMode={deleteMode}
-        editMode={editMode}
-        searchQuery={searchQuery}
+        uiState={uiState}
+        searchState={searchState}
         filterMode={filter.filterMode}
         hasActiveFilters={filter.hasActiveFilters}
         activeFilterCount={filter.activeFilterCount}
-        onSearch={handleSearch}
         onFilter={handleFilter}
-        onEdit={handleEdit}
         onDelete={handleDelete}
         onEnterDeleteMode={handleEnterDeleteMode}
         onExitDeleteMode={handleExitDeleteMode}
         onEnterEditMode={handleEnterEditMode}
         onExitEditMode={handleExitEditMode}
-        onClearSearch={handleClearSearch}
         onClearFilters={filter.clearFilters}
-        disabled={loading}
       />
 
       {/* Pumps Table */}
       <PumpsTable
         pumps={currentPagePumps}
         selectedPumps={selectedPumps}
-        deleteMode={deleteMode}
-        editMode={editMode}
+        uiState={uiState}
         filterMode={filter.filterMode}
         filterOptions={filter.filterOptions}
         filters={filter.filters}
@@ -224,7 +222,6 @@ export const PumpsPage: React.FC = () => {
         onPumpEdit={handlePumpEdit}
         onToggleTypeFilter={filter.toggleTypeFilter}
         onToggleAreaFilter={filter.toggleAreaFilter}
-        loading={loading}
         currentPage={pagination.currentPage}
         pageSize={pagination.pageSize}
         total={pagination.total}

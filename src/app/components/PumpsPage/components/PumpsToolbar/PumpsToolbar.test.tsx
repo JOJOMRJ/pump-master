@@ -4,9 +4,7 @@ import { PumpsToolbar } from './PumpsToolbar';
 
 describe('PumpsToolbar', () => {
   const mockHandlers = {
-    onSearch: vi.fn(),
     onFilter: vi.fn(),
-    onEdit: vi.fn(),
     onDelete: vi.fn(),
     onEnterEditMode: vi.fn(),
     onExitEditMode: vi.fn(),
@@ -14,12 +12,30 @@ describe('PumpsToolbar', () => {
     onExitDeleteMode: vi.fn(),
   };
 
+  const defaultUiState = {
+    deleteMode: false,
+    editMode: false,
+    loading: false,
+  };
+
+  const defaultSearchState = {
+    searchQuery: '',
+    onSearch: vi.fn(),
+    onClearSearch: vi.fn(),
+  };
+
+  const defaultProps = {
+    ...mockHandlers,
+    uiState: defaultUiState,
+    searchState: defaultSearchState,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should render all toolbar buttons in default mode', () => {
-    render(<PumpsToolbar {...mockHandlers} />);
+    render(<PumpsToolbar {...defaultProps} />);
 
     expect(screen.getByTitle('Search pumps')).toBeInTheDocument();
     expect(screen.getByTitle('Filter pumps')).toBeInTheDocument();
@@ -28,7 +44,12 @@ describe('PumpsToolbar', () => {
   });
 
   it('should render edit mode UI', () => {
-    render(<PumpsToolbar editMode={true} {...mockHandlers} />);
+    render(
+      <PumpsToolbar
+        {...defaultProps}
+        uiState={{ ...defaultUiState, editMode: true }}
+      />
+    );
 
     expect(screen.queryByTitle('Search pumps')).not.toBeInTheDocument();
     expect(screen.queryByTitle('Filter pumps')).not.toBeInTheDocument();
@@ -37,7 +58,11 @@ describe('PumpsToolbar', () => {
 
   it('should render delete mode UI', () => {
     render(
-      <PumpsToolbar deleteMode={true} selectedCount={3} {...mockHandlers} />
+      <PumpsToolbar
+        {...defaultProps}
+        uiState={{ ...defaultUiState, deleteMode: true }}
+        selectedCount={3}
+      />
     );
 
     expect(screen.queryByTitle('Search pumps')).not.toBeInTheDocument();
@@ -47,28 +72,28 @@ describe('PumpsToolbar', () => {
   });
 
   it('should call onSearch when search button clicked', () => {
-    render(<PumpsToolbar {...mockHandlers} />);
+    render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Search pumps'));
-    expect(mockHandlers.onSearch).toHaveBeenCalledTimes(1);
+    expect(defaultSearchState.onSearch).toHaveBeenCalledTimes(1);
   });
 
   it('should call onFilter when filter button clicked', () => {
-    render(<PumpsToolbar {...mockHandlers} />);
+    render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Filter pumps'));
     expect(mockHandlers.onFilter).toHaveBeenCalledTimes(1);
   });
 
   it('should call onEnterEditMode when edit button clicked', () => {
-    render(<PumpsToolbar {...mockHandlers} />);
+    render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Enter edit mode'));
     expect(mockHandlers.onEnterEditMode).toHaveBeenCalledTimes(1);
   });
 
   it('should call onEnterDeleteMode when delete button clicked', () => {
-    render(<PumpsToolbar {...mockHandlers} />);
+    render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Enter delete mode'));
     expect(mockHandlers.onEnterDeleteMode).toHaveBeenCalledTimes(1);
@@ -76,7 +101,11 @@ describe('PumpsToolbar', () => {
 
   it('should disable all buttons when disabled prop is true', () => {
     render(
-      <PumpsToolbar selectedCount={5} disabled={true} {...mockHandlers} />
+      <PumpsToolbar
+        {...defaultProps}
+        selectedCount={5}
+        uiState={{ ...defaultUiState, loading: true }}
+      />
     );
 
     expect(screen.getByTitle('Search pumps')).toBeDisabled();
