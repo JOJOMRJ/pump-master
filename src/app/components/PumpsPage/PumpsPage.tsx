@@ -4,6 +4,7 @@ import type { PumpDevice } from '../../types';
 import { mockPumpService } from '../../services/mockPumpService';
 import { usePagination, useFilter } from '../../hooks';
 import { Loading } from '../../../shared/components';
+import { useSelection, useSearch } from '../../hooks';
 import {
   PageHeader,
   PumpsToolbar,
@@ -14,7 +15,6 @@ import {
 export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPumps, setSelectedPumps] = useState<Set<string>>(new Set());
 
   // Pagination management
   const pagination = usePagination(10);
@@ -26,8 +26,24 @@ export const PumpsPage: React.FC = () => {
   });
   const [deleteMode, setDeleteMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // Selection management
+  const selection = useSelection<PumpDevice>({
+    keyExtractor: (pump: PumpDevice) => pump.id,
+  });
+
+  // Search management
+  const search = useSearch({
+    onSearch: () => {
+      pagination.handlePageChange(1);
+    },
+    onClear: () => {
+      pagination.handlePageChange(1);
+    },
+    onPageReset: () => {
+      pagination.handlePageChange(1);
+    },
+  });
 
   useEffect(() => {
     const fetchPumps = async () => {
@@ -36,7 +52,7 @@ export const PumpsPage: React.FC = () => {
         const response = await mockPumpService.getPumps({
           page: pagination.currentPage,
           pageSize: pagination.pageSize,
-          searchQuery: searchQuery.trim() || undefined,
+          searchQuery: search.searchQuery.trim() || undefined,
           filters: filter.getFilterParams(),
         });
 
@@ -65,7 +81,7 @@ export const PumpsPage: React.FC = () => {
   }, [
     pagination.currentPage,
     pagination.pageSize,
-    searchQuery,
+    search.searchQuery,
     filter.filters.types,
     filter.filters.areas,
   ]);
@@ -73,25 +89,6 @@ export const PumpsPage: React.FC = () => {
   // Event handlers
   const handleNewPump = () => {
     console.log('New Pump clicked');
-  };
-
-  const handleSearch = () => {
-    setShowSearchModal(true);
-  };
-
-  const handleSearchSubmit = (query: string) => {
-    setSearchQuery(query);
-    setShowSearchModal(false);
-    pagination.handlePageChange(1); // Reset to first page when searching
-  };
-
-  const handleSearchCancel = () => {
-    setShowSearchModal(false);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    pagination.handlePageChange(1);
   };
 
   const handleFilter = () => {
@@ -110,19 +107,19 @@ export const PumpsPage: React.FC = () => {
   const handleEnterDeleteMode = () => {
     setDeleteMode(true);
     setEditMode(false); // Exit edit mode if active
-    setSelectedPumps(new Set()); // Clear any existing selections
+    selection.clearSelection(); // Clear any existing selections
   };
 
   const handleExitDeleteMode = () => {
     setDeleteMode(false);
-    setSelectedPumps(new Set()); // Clear selections when exiting
+    selection.clearSelection(); // Clear selections when exiting
   };
 
   const handleDelete = async () => {
-    if (selectedPumps.size === 0) return;
+    if (selection.selectedCount === 0) return;
 
     try {
-      const selectedIds = Array.from(selectedPumps);
+      const selectedIds = Array.from(selection.selectedItems);
       const response = await mockPumpService.deletePumps(selectedIds);
 
       if (!response.success || !response.data) {
@@ -131,7 +128,7 @@ export const PumpsPage: React.FC = () => {
       }
 
       // Clear selection and exit delete mode
-      setSelectedPumps(new Set());
+      selection.clearSelection();
       setDeleteMode(false);
 
       // Calculate if we need to adjust current page
@@ -154,7 +151,7 @@ export const PumpsPage: React.FC = () => {
   };
 
   const handleSelectionChange = (selectedIds: Set<string>) => {
-    setSelectedPumps(selectedIds);
+    selection.setSelectedItems(selectedIds);
   };
 
   const handlePumpEdit = (pumpId: string) => {
@@ -165,12 +162,12 @@ export const PumpsPage: React.FC = () => {
   const handlePageChange = (page: number) => {
     pagination.handlePageChange(page);
     // Clear current page selection state
-    setSelectedPumps(new Set());
+    selection.clearSelection();
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
     pagination.handlePageSizeChange(newPageSize);
-    setSelectedPumps(new Set()); // Clear selections
+    selection.clearSelection(); // Clear selections
   };
 
   // Server-side pagination - no need to slice data
@@ -183,9 +180,24 @@ export const PumpsPage: React.FC = () => {
   // State object aggregation
   const uiState = { deleteMode, editMode, loading };
   const searchState = {
-    searchQuery,
-    onSearch: handleSearch,
-    onClearSearch: handleClearSearch,
+    searchQuery: search.searchQuery,
+    onSearch: search.handleSearch,
+    onClearSearch: search.handleClearSearch,
+  };
+  const filterState = {
+    mode: filter.filterMode,
+    options: filter.filterOptions,
+    filters: filter.filters,
+    onToggleType: filter.toggleTypeFilter,
+    onToggleArea: filter.toggleAreaFilter,
+  };
+  const paginationState = {
+    currentPage: pagination.currentPage,
+    pageSize: pagination.pageSize,
+    total: pagination.total,
+    totalPages: pagination.totalPages,
+    onPageChange: handlePageChange,
+    onPageSizeChange: handlePageSizeChange,
   };
 
   return (
@@ -195,7 +207,7 @@ export const PumpsPage: React.FC = () => {
 
       {/* Toolbar */}
       <PumpsToolbar
-        selectedCount={selectedPumps.size}
+        selectedCount={selection.selectedCount}
         uiState={uiState}
         searchState={searchState}
         filterMode={filter.filterMode}
@@ -213,29 +225,20 @@ export const PumpsPage: React.FC = () => {
       {/* Pumps Table */}
       <PumpsTable
         pumps={currentPagePumps}
-        selectedPumps={selectedPumps}
+        selectedPumps={selection.selectedItems}
         uiState={uiState}
-        filterMode={filter.filterMode}
-        filterOptions={filter.filterOptions}
-        filters={filter.filters}
+        filterState={filterState}
+        paginationState={paginationState}
         onSelectionChange={handleSelectionChange}
         onPumpEdit={handlePumpEdit}
-        onToggleTypeFilter={filter.toggleTypeFilter}
-        onToggleAreaFilter={filter.toggleAreaFilter}
-        currentPage={pagination.currentPage}
-        pageSize={pagination.pageSize}
-        total={pagination.total}
-        totalPages={pagination.totalPages}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
       />
 
       {/* Search Modal */}
       <SearchModal
-        show={showSearchModal}
-        currentQuery={searchQuery}
-        onSubmit={handleSearchSubmit}
-        onCancel={handleSearchCancel}
+        show={search.showSearchModal}
+        currentQuery={search.searchQuery}
+        onSubmit={search.handleSearchSubmit}
+        onCancel={search.handleSearchCancel}
       />
     </Container>
   );

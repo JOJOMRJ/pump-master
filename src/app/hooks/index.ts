@@ -12,3 +12,5 @@ export type {
   FilterExtractors,
   UseFilterReturn,
 } from './useFilter';
+export { useSelection } from './useSelection';
+export { useSearch } from './useSearch';

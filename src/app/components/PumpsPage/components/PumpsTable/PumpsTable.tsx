@@ -13,17 +13,15 @@ interface UIState {
   loading: boolean;
 }
 
-interface PumpsTableProps {
-  pumps: PumpDevice[];
-  selectedPumps: Set<string>;
-  uiState: UIState;
-  filterMode?: boolean;
-  filterOptions?: FilterOptions;
-  filters?: FilterState;
-  onSelectionChange: (selectedIds: Set<string>) => void;
-  onPumpEdit?: (pumpId: string) => void;
-  onToggleTypeFilter?: (type: string) => void;
-  onToggleAreaFilter?: (area: string) => void;
+interface FilterStateProps {
+  mode: boolean;
+  options: FilterOptions;
+  filters: FilterState;
+  onToggleType: (type: string) => void;
+  onToggleArea: (area: string) => void;
+}
+
+interface PaginationStateProps {
   currentPage: number;
   pageSize: number;
   total: number;
@@ -32,23 +30,24 @@ interface PumpsTableProps {
   onPageSizeChange?: (pageSize: number) => void;
 }
 
+interface PumpsTableProps {
+  pumps: PumpDevice[];
+  selectedPumps: Set<string>;
+  uiState: UIState;
+  filterState: FilterStateProps;
+  paginationState: PaginationStateProps;
+  onSelectionChange: (selectedIds: Set<string>) => void;
+  onPumpEdit?: (pumpId: string) => void;
+}
+
 export const PumpsTable: React.FC<PumpsTableProps> = ({
   pumps,
   selectedPumps,
   uiState,
-  filterMode = false,
-  filterOptions,
-  filters,
+  filterState,
+  paginationState,
   onSelectionChange,
   onPumpEdit,
-  onToggleTypeFilter,
-  onToggleAreaFilter,
-  currentPage,
-  pageSize,
-  total,
-  totalPages,
-  onPageChange,
-  onPageSizeChange,
 }) => {
   const { deleteMode, editMode, loading } = uiState;
   // Column configuration with responsive display control
@@ -119,9 +118,9 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
         selectedPumps={selectedPumps}
         deleteMode={deleteMode}
         editMode={editMode}
-        filterMode={filterMode}
-        filterOptions={filterOptions}
-        filters={filters}
+        filterMode={filterState.mode}
+        filterOptions={filterState.options}
+        filters={filterState.filters}
         loading={loading}
         columns={columns}
         isAllSelected={isAllSelected}
@@ -129,20 +128,20 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
         onSelectAll={handleSelectAll}
         onRowSelect={handleRowSelect}
         onRowClick={handleRowClick}
-        onToggleTypeFilter={onToggleTypeFilter}
-        onToggleAreaFilter={onToggleAreaFilter}
+        onToggleTypeFilter={filterState.onToggleType}
+        onToggleAreaFilter={filterState.onToggleArea}
       />
 
       {/* Summary and Pagination */}
       <PaginationSummary
-        currentPage={currentPage}
-        pageSize={pageSize}
-        total={total}
-        totalPages={totalPages}
+        currentPage={paginationState.currentPage}
+        pageSize={paginationState.pageSize}
+        total={paginationState.total}
+        totalPages={paginationState.totalPages}
         selectedCount={selectedPumps.size}
         deleteMode={deleteMode}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
+        onPageChange={paginationState.onPageChange}
+        onPageSizeChange={paginationState.onPageSizeChange}
       />
     </>
   );
