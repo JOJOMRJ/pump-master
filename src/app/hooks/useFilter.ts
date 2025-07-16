@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 
 export interface FilterState {
   types: Set<string>;
@@ -40,17 +40,30 @@ export interface UseFilterReturn {
 export const useFilter = <T>(
   data: T[],
   extractors: FilterExtractors<T>,
-  staticOptions?: FilterOptions
+  staticOptionsLoader?: () => Promise<FilterOptions>
 ): UseFilterReturn => {
   const [filterMode, setFilterMode] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     types: new Set(),
     areas: new Set(),
   });
+  const [staticOptions, setStaticOptions] = useState<FilterOptions>({
+    types: [],
+    areas: [],
+  });
+
+  // 加载静态筛选选项
+  useEffect(() => {
+    if (staticOptionsLoader) {
+      staticOptionsLoader().then(options => {
+        setStaticOptions(options);
+      });
+    }
+  }, [staticOptionsLoader]);
 
   // 从数据中提取筛选选项 - 使用staticOptions如果提供了，否则从data中提取
   const filterOptions = useMemo(() => {
-    if (staticOptions) {
+    if (staticOptions.types.length > 0 || staticOptions.areas.length > 0) {
       return staticOptions;
     }
 
