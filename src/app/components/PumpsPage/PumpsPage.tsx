@@ -145,7 +145,7 @@ export const PumpsPage: React.FC = () => {
 
   const handlePumpEdit = (pumpId: string) => {
     console.log('Edit pump:', pumpId);
-    // TODO: 触发编辑弹窗逻辑
+    // TODO: Trigger edit modal logic
   };
 
   // Server-side pagination - no need to slice data

@@ -6,6 +6,8 @@ import { HiOutlineFilter } from 'react-icons/hi';
 import { TiPencil } from 'react-icons/ti';
 import { AppMode } from '../../../../types';
 import type { UseSearchReturn } from '../../../../hooks';
+import { usePermissions } from '../../../../hooks';
+import { PERMISSIONS } from '../../../../types/Permissions';
 
 interface PumpsToolbarProps {
   selectedCount?: number;
@@ -34,8 +36,10 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   onModeChange,
   onClearFilters,
 }) => {
+  const { hasPermission } = usePermissions();
   const deleteMode = mode === AppMode.DELETE;
   const editMode = mode === AppMode.EDIT;
+
   return (
     <Row className="mb-3">
       <Col xs={12}>
@@ -101,22 +105,26 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
                     Clear Filters
                   </Button>
                 )}
-                <Button
-                  variant={editMode ? 'primary' : 'outline-secondary'}
-                  className="border-0"
-                  onClick={() =>
-                    onModeChange?.(editMode ? AppMode.NORMAL : AppMode.EDIT)
-                  }
-                  disabled={loading}
-                  title={editMode ? 'Exit edit mode' : 'Enter edit mode'}
-                >
-                  <TiPencil />
-                </Button>
+                {/* Edit button - requires edit permission */}
+                {hasPermission(PERMISSIONS.EDIT) && (
+                  <Button
+                    variant={editMode ? 'primary' : 'outline-secondary'}
+                    className="border-0"
+                    onClick={() =>
+                      onModeChange?.(editMode ? AppMode.NORMAL : AppMode.EDIT)
+                    }
+                    disabled={loading}
+                    title={editMode ? 'Exit edit mode' : 'Enter edit mode'}
+                  >
+                    <TiPencil />
+                  </Button>
+                )}
               </>
             )}
           </div>
           <div className="d-flex gap-2">
-            {!deleteMode && (
+            {/* Delete button - requires delete permission */}
+            {!deleteMode && hasPermission(PERMISSIONS.DELETE) && (
               <Button
                 variant="danger"
                 style={{ display: 'flex', alignItems: 'center' }}

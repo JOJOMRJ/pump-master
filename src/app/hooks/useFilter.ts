@@ -52,7 +52,7 @@ export const useFilter = <T>(
     areas: [],
   });
 
-  // 加载静态筛选选项
+  // Load static filter options
   useEffect(() => {
     if (staticOptionsLoader) {
       staticOptionsLoader().then(options => {
@@ -61,7 +61,7 @@ export const useFilter = <T>(
     }
   }, [staticOptionsLoader]);
 
-  // 从数据中提取筛选选项 - 使用staticOptions如果提供了，否则从data中提取
+  // Extract filter options from data - use staticOptions if provided, otherwise extract from data
   const filterOptions = useMemo(() => {
     if (staticOptions.types.length > 0 || staticOptions.areas.length > 0) {
       return staticOptions;

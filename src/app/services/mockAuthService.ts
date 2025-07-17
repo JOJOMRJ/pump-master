@@ -20,6 +20,7 @@ const generateToken = (user: User): string => {
       email: user.email,
       role: user.role,
       name: user.name,
+      permissions: user.permissions, // Add permissions field
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours expiration
     })

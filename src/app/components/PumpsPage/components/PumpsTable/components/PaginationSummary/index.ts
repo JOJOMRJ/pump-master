@@ -1,0 +1,1 @@
+export { PaginationSummary } from './PaginationSummary';
