@@ -49,6 +49,9 @@ describe('PumpsTable', () => {
     toggleTypeFilter: vi.fn(),
     toggleAreaFilter: vi.fn(),
     clearFilters: vi.fn(),
+    clearTypeFilters: vi.fn(),
+    clearAreaFilters: vi.fn(),
+    getFilterParams: vi.fn(),
   };
 
   const mockPagination = {
@@ -62,6 +65,11 @@ describe('PumpsTable', () => {
     nextPage: vi.fn(),
     previousPage: vi.fn(),
     setPageSize: vi.fn(),
+    handlePageChange: vi.fn(),
+    handlePageSizeChange: vi.fn(),
+    setTotal: vi.fn(),
+    setTotalPages: vi.fn(),
+    reset: vi.fn(),
   };
 
   const defaultProps = {
