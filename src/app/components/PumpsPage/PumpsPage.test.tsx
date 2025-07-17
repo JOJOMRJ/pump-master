@@ -2,6 +2,7 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
 import { PumpsPage } from './PumpsPage';
 import { mockPumpService } from '../../services/mockPumpService';
+import { AuthProvider } from '../../contexts/AuthContext';
 
 // Mock the pump service
 vi.mock('../../services/mockPumpService', () => ({
@@ -18,9 +19,31 @@ const mockGetFilterOptions = mockPumpService.getFilterOptions as ReturnType<
   typeof vi.fn
 >;
 
+// Test wrapper with AuthProvider
+const renderWithAuth = (component: React.ReactElement) => {
+  // Mock localStorage with admin user token
+  const adminToken = btoa(
+    JSON.stringify({
+      userId: 'admin-1',
+      email: 'admin@test.com',
+      name: 'Admin User',
+      role: 'admin',
+      permissions: ['view', 'edit', 'delete', 'manage'],
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    })
+  );
+
+  const mockToken = `header.${adminToken}.signature`;
+  localStorage.setItem('token', mockToken);
+
+  return render(<AuthProvider>{component}</AuthProvider>);
+};
+
 describe('PumpsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
 
     // Default mock for getFilterOptions
     mockGetFilterOptions.mockResolvedValue({
@@ -35,7 +58,7 @@ describe('PumpsPage', () => {
   it('should render loading state initially', () => {
     mockGetPumps.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-    render(<PumpsPage />);
+    renderWithAuth(<PumpsPage />);
 
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
@@ -70,7 +93,7 @@ describe('PumpsPage', () => {
       },
     });
 
-    render(<PumpsPage />);
+    renderWithAuth(<PumpsPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Pumps')).toBeInTheDocument();
@@ -95,7 +118,7 @@ describe('PumpsPage', () => {
       },
     });
 
-    render(<PumpsPage />);
+    renderWithAuth(<PumpsPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Pumps')).toBeInTheDocument();
@@ -117,7 +140,7 @@ describe('PumpsPage', () => {
       },
     });
 
-    render(<PumpsPage />);
+    renderWithAuth(<PumpsPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Pumps')).toBeInTheDocument();
@@ -142,7 +165,7 @@ describe('PumpsPage', () => {
       },
     });
 
-    render(<PumpsPage />);
+    renderWithAuth(<PumpsPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Pump Name')).toBeInTheDocument();
@@ -201,7 +224,7 @@ describe('PumpsPage', () => {
       },
     });
 
-    render(<PumpsPage />);
+    renderWithAuth(<PumpsPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Showing 1-2 of 2 pumps')).toBeInTheDocument();
@@ -254,7 +277,7 @@ describe('PumpsPage', () => {
     });
 
     it('should enter delete mode and allow pump selection', async () => {
-      render(<PumpsPage />);
+      renderWithAuth(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
@@ -272,7 +295,7 @@ describe('PumpsPage', () => {
     });
 
     it('should exit delete mode when cancel is clicked', async () => {
-      render(<PumpsPage />);
+      renderWithAuth(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
@@ -330,7 +353,7 @@ describe('PumpsPage', () => {
           },
         });
 
-      render(<PumpsPage />);
+      renderWithAuth(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);
@@ -376,7 +399,7 @@ describe('PumpsPage', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
-      render(<PumpsPage />);
+      renderWithAuth(<PumpsPage />);
 
       await waitFor(() => {
         expect(screen.getAllByText('Pump 1').length).toBeGreaterThanOrEqual(1);

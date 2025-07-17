@@ -86,7 +86,7 @@ export const useSelection = <T>(
     [selectedItems, keyExtractor]
   );
 
-  // 便捷方法：处理全选操作
+  // Convenience method: handle select all operation
   const handleSelectAll = useCallback(
     (checked: boolean, items: T[]) => {
       if (checked) {
@@ -98,7 +98,7 @@ export const useSelection = <T>(
     [selectAll, clearSelection]
   );
 
-  // 便捷方法：处理单项选择
+  // Convenience method: handle single item selection
   const handleItemSelect = useCallback(
     (item: T, checked: boolean) => {
       if (checked) {
