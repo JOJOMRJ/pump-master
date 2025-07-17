@@ -1,10 +1,10 @@
 import React from 'react';
 import { Row, Col, Table, Form } from 'react-bootstrap';
-import type { PumpDevice } from '../../../../../types';
-import { AppMode } from '../../../../../types';
-import type { FilterState, FilterOptions } from '../../../../../hooks';
-import { formatValue, getResponsiveClass } from '../utils';
-import { TableHeader } from './TableHeader';
+import type { PumpDevice } from '../../../../../../types';
+import { AppMode } from '../../../../../../types';
+import type { FilterState, FilterOptions } from '../../../../../../hooks';
+import { formatValue, getResponsiveClass } from '../../utils';
+import { TableHeader } from '../TableHeader';
 
 interface DesktopTableViewProps {
   pumps: PumpDevice[];

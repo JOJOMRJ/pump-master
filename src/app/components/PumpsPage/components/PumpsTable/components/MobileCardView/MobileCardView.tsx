@@ -1,8 +1,8 @@
 import React from 'react';
 import { Row, Col, Card, Form } from 'react-bootstrap';
-import type { PumpDevice } from '../../../../../types';
-import { AppMode } from '../../../../../types';
-import { formatValue } from '../utils';
+import type { PumpDevice } from '../../../../../../types';
+import { AppMode } from '../../../../../../types';
+import { formatValue } from '../../utils';
 
 interface MobileCardViewProps {
   pumps: PumpDevice[];

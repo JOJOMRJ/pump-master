@@ -1,0 +1,1 @@
+export { DesktopTableView } from './DesktopTableView';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Pagination, Dropdown } from 'react-bootstrap';
-import { AppMode } from '../../../../../types';
-import { getPaginationItems } from '../utils';
+import { AppMode } from '../../../../../../types';
+import { getPaginationItems } from '../../utils';
 
 interface PaginationSummaryProps {
   currentPage: number;

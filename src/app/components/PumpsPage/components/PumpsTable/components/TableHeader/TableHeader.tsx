@@ -1,9 +1,9 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
-import { AppMode } from '../../../../../types';
-import type { FilterState, FilterOptions } from '../../../../../hooks';
-import { getResponsiveClass } from '../utils';
-import { FilterDropdown } from './FilterDropdown';
+import { AppMode } from '../../../../../../types';
+import type { FilterState, FilterOptions } from '../../../../../../hooks';
+import { getResponsiveClass } from '../../utils';
+import { FilterDropdown } from '../FilterDropdown';
 
 interface TableHeaderProps {
   columns: readonly { key: string; label: string; responsive: string }[];
