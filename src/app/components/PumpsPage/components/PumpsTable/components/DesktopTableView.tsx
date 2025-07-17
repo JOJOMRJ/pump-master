@@ -1,6 +1,7 @@
 import React from 'react';
 import { Row, Col, Table, Form } from 'react-bootstrap';
 import type { PumpDevice } from '../../../../../types';
+import { AppMode } from '../../../../../types';
 import type { FilterState, FilterOptions } from '../../../../../hooks';
 import { formatValue, getResponsiveClass } from '../utils';
 import { TableHeader } from './TableHeader';
@@ -8,8 +9,7 @@ import { TableHeader } from './TableHeader';
 interface DesktopTableViewProps {
   pumps: PumpDevice[];
   selectedPumps: Set<string>;
-  deleteMode?: boolean;
-  editMode?: boolean;
+  mode?: AppMode;
   filterMode?: boolean;
   filterOptions?: FilterOptions;
   filters?: FilterState;
@@ -27,8 +27,7 @@ interface DesktopTableViewProps {
 export const DesktopTableView: React.FC<DesktopTableViewProps> = ({
   pumps,
   selectedPumps,
-  deleteMode = false,
-  editMode = false,
+  mode = AppMode.NORMAL,
   filterMode = false,
   filterOptions,
   filters,
@@ -42,6 +41,8 @@ export const DesktopTableView: React.FC<DesktopTableViewProps> = ({
   onToggleTypeFilter,
   onToggleAreaFilter,
 }) => {
+  const deleteMode = mode === AppMode.DELETE;
+  const editMode = mode === AppMode.EDIT;
   return (
     <Row className="d-none d-md-block">
       <Col xs={12}>
@@ -54,7 +55,7 @@ export const DesktopTableView: React.FC<DesktopTableViewProps> = ({
           >
             <TableHeader
               columns={columns}
-              deleteMode={deleteMode}
+              mode={mode}
               filterMode={filterMode}
               filterOptions={filterOptions}
               filters={filters}

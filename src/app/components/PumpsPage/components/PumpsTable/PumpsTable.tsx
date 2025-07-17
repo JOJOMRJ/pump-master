@@ -1,17 +1,12 @@
 import React from 'react';
 import type { PumpDevice } from '../../../../types';
+import { AppMode } from '../../../../types';
 import type { FilterState, FilterOptions } from '../../../../hooks';
 import {
   MobileCardView,
   DesktopTableView,
   PaginationSummary,
 } from './components';
-
-interface UIState {
-  deleteMode: boolean;
-  editMode: boolean;
-  loading: boolean;
-}
 
 interface FilterStateProps {
   mode: boolean;
@@ -33,7 +28,8 @@ interface PaginationStateProps {
 interface PumpsTableProps {
   pumps: PumpDevice[];
   selectedPumps: Set<string>;
-  uiState: UIState;
+  mode: AppMode;
+  loading?: boolean;
   filterState: FilterStateProps;
   paginationState: PaginationStateProps;
   onSelectionChange: (selectedIds: Set<string>) => void;
@@ -43,13 +39,13 @@ interface PumpsTableProps {
 export const PumpsTable: React.FC<PumpsTableProps> = ({
   pumps,
   selectedPumps,
-  uiState,
+  mode,
+  loading = false,
   filterState,
   paginationState,
   onSelectionChange,
   onPumpEdit,
 }) => {
-  const { deleteMode, editMode, loading } = uiState;
   // Column configuration with responsive display control
   const columns = [
     { key: 'name', label: 'Pump Name', responsive: 'always' },
@@ -87,7 +83,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
 
   // Handle row click in edit mode
   const handleRowClick = (pumpId: string) => {
-    if (editMode && onPumpEdit) {
+    if (mode === AppMode.EDIT && onPumpEdit) {
       onPumpEdit(pumpId);
     }
   };
@@ -104,8 +100,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
         <MobileCardView
           pumps={pumps}
           selectedPumps={selectedPumps}
-          deleteMode={deleteMode}
-          editMode={editMode}
+          mode={mode}
           loading={loading}
           onRowSelect={handleRowSelect}
           onRowClick={handleRowClick}
@@ -116,8 +111,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
       <DesktopTableView
         pumps={pumps}
         selectedPumps={selectedPumps}
-        deleteMode={deleteMode}
-        editMode={editMode}
+        mode={mode}
         filterMode={filterState.mode}
         filterOptions={filterState.options}
         filters={filterState.filters}
@@ -139,7 +133,7 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
         total={paginationState.total}
         totalPages={paginationState.totalPages}
         selectedCount={selectedPumps.size}
-        deleteMode={deleteMode}
+        mode={mode}
         onPageChange={paginationState.onPageChange}
         onPageSizeChange={paginationState.onPageSizeChange}
       />

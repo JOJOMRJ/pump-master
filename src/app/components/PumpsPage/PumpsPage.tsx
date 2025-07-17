@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container } from 'react-bootstrap';
 import type { PumpDevice } from '../../types';
+import { AppMode } from '../../types';
 import { mockPumpService } from '../../services/mockPumpService';
 import { usePagination, useFilter } from '../../hooks';
 import { Loading } from '../../../shared/components';
@@ -33,8 +34,7 @@ export const PumpsPage: React.FC = () => {
         : { types: [], areas: [] };
     }
   );
-  const [deleteMode, setDeleteMode] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [mode, setMode] = useState<AppMode>(AppMode.NORMAL);
 
   // Selection management
   const selection = useSelection<PumpDevice>({
@@ -100,22 +100,14 @@ export const PumpsPage: React.FC = () => {
     console.log('New Pump clicked');
   };
 
-  const handleToggleEditMode = () => {
-    setEditMode(!editMode);
-    if (!editMode) {
-      setDeleteMode(false); // Exit delete mode if entering edit mode
+  const handleModeChange = (newMode: AppMode) => {
+    if (newMode === AppMode.DELETE) {
+      selection.clearSelection(); // Clear selections when entering delete mode
     }
-  };
-
-  const handleEnterDeleteMode = () => {
-    setDeleteMode(true);
-    setEditMode(false); // Exit edit mode if active
-    selection.clearSelection(); // Clear any existing selections
-  };
-
-  const handleExitDeleteMode = () => {
-    setDeleteMode(false);
-    selection.clearSelection(); // Clear selections when exiting
+    if (mode === AppMode.DELETE && newMode !== AppMode.DELETE) {
+      selection.clearSelection(); // Clear selections when exiting delete mode
+    }
+    setMode(newMode);
   };
 
   const handleDelete = async () => {
@@ -132,7 +124,7 @@ export const PumpsPage: React.FC = () => {
 
       // Clear selection and exit delete mode
       selection.clearSelection();
-      setDeleteMode(false);
+      setMode(AppMode.NORMAL);
 
       // Calculate if we need to adjust current page
       const deletedCount = response.data.length;
@@ -180,8 +172,6 @@ export const PumpsPage: React.FC = () => {
     return <Loading />;
   }
 
-  // State object aggregation
-  const uiState = { deleteMode, editMode, loading };
   const searchState = {
     searchQuery: search.searchQuery,
     onSearch: search.handleSearch,
@@ -211,16 +201,15 @@ export const PumpsPage: React.FC = () => {
       {/* Toolbar */}
       <PumpsToolbar
         selectedCount={selection.selectedCount}
-        uiState={uiState}
+        mode={mode}
+        loading={loading}
         searchState={searchState}
         filterMode={filter.filterMode}
         hasActiveFilters={filter.hasActiveFilters}
         activeFilterCount={filter.activeFilterCount}
         onFilter={filter.toggleFilterMode}
         onDelete={handleDelete}
-        onEnterDeleteMode={handleEnterDeleteMode}
-        onExitDeleteMode={handleExitDeleteMode}
-        onToggleEditMode={handleToggleEditMode}
+        onModeChange={handleModeChange}
         onClearFilters={filter.clearFilters}
       />
 
@@ -228,7 +217,8 @@ export const PumpsPage: React.FC = () => {
       <PumpsTable
         pumps={currentPagePumps}
         selectedPumps={selection.selectedItems}
-        uiState={uiState}
+        mode={mode}
+        loading={loading}
         filterState={filterState}
         paginationState={paginationState}
         onSelectionChange={handleSelectionChange}

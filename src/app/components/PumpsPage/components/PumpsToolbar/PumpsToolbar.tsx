@@ -4,12 +4,7 @@ import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { IoSearch, IoClose } from 'react-icons/io5';
 import { HiOutlineFilter } from 'react-icons/hi';
 import { TiPencil } from 'react-icons/ti';
-
-interface UIState {
-  deleteMode: boolean;
-  editMode: boolean;
-  loading: boolean;
-}
+import { AppMode } from '../../../../types';
 
 interface SearchState {
   searchQuery: string;
@@ -19,34 +14,33 @@ interface SearchState {
 
 interface PumpsToolbarProps {
   selectedCount?: number;
-  uiState: UIState;
+  mode: AppMode;
+  loading?: boolean;
   searchState: SearchState;
   filterMode?: boolean;
   hasActiveFilters?: boolean;
   activeFilterCount?: number;
   onFilter?: () => void;
   onDelete?: () => void;
-  onEnterDeleteMode?: () => void;
-  onExitDeleteMode?: () => void;
-  onToggleEditMode?: () => void;
+  onModeChange?: (mode: AppMode) => void;
   onClearFilters?: () => void;
 }
 
 export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   selectedCount = 0,
-  uiState,
+  mode,
+  loading = false,
   searchState,
   filterMode = false,
   hasActiveFilters = false,
   activeFilterCount = 0,
   onFilter,
   onDelete,
-  onEnterDeleteMode,
-  onExitDeleteMode,
-  onToggleEditMode,
+  onModeChange,
   onClearFilters,
 }) => {
-  const { deleteMode, editMode, loading } = uiState;
+  const deleteMode = mode === AppMode.DELETE;
+  const editMode = mode === AppMode.EDIT;
   const { searchQuery, onSearch, onClearSearch } = searchState;
   return (
     <Row className="mb-3">
@@ -114,7 +108,9 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
                 <Button
                   variant={editMode ? 'primary' : 'outline-secondary'}
                   className="border-0"
-                  onClick={onToggleEditMode}
+                  onClick={() =>
+                    onModeChange?.(editMode ? AppMode.NORMAL : AppMode.EDIT)
+                  }
                   disabled={loading}
                   title={editMode ? 'Exit edit mode' : 'Enter edit mode'}
                 >
@@ -128,7 +124,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
               <Button
                 variant="danger"
                 style={{ display: 'flex', alignItems: 'center' }}
-                onClick={onEnterDeleteMode}
+                onClick={() => onModeChange?.(AppMode.DELETE)}
                 disabled={loading || editMode}
                 title={
                   editMode ? 'Exit edit mode to delete' : 'Enter delete mode'
@@ -158,7 +154,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
                 </Button>
                 <Button
                   variant="secondary"
-                  onClick={onExitDeleteMode}
+                  onClick={() => onModeChange?.(AppMode.NORMAL)}
                   disabled={loading}
                   title="Exit delete mode"
                 >

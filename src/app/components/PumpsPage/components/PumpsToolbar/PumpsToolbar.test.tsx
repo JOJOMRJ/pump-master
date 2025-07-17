@@ -1,20 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
+import { AppMode } from '../../../../types';
 import { PumpsToolbar } from './PumpsToolbar';
 
 describe('PumpsToolbar', () => {
   const mockHandlers = {
     onFilter: vi.fn(),
     onDelete: vi.fn(),
-    onToggleEditMode: vi.fn(),
-    onEnterDeleteMode: vi.fn(),
-    onExitDeleteMode: vi.fn(),
-  };
-
-  const defaultUiState = {
-    deleteMode: false,
-    editMode: false,
-    loading: false,
+    onModeChange: vi.fn(),
   };
 
   const defaultSearchState = {
@@ -25,7 +18,8 @@ describe('PumpsToolbar', () => {
 
   const defaultProps = {
     ...mockHandlers,
-    uiState: defaultUiState,
+    mode: AppMode.NORMAL,
+    loading: false,
     searchState: defaultSearchState,
   };
 
@@ -43,12 +37,7 @@ describe('PumpsToolbar', () => {
   });
 
   it('should render edit mode UI', () => {
-    render(
-      <PumpsToolbar
-        {...defaultProps}
-        uiState={{ ...defaultUiState, editMode: true }}
-      />
-    );
+    render(<PumpsToolbar {...defaultProps} mode={AppMode.EDIT} />);
 
     // Search and filter buttons should still be visible in edit mode
     expect(screen.getByTitle('Search pumps')).toBeInTheDocument();
@@ -59,11 +48,7 @@ describe('PumpsToolbar', () => {
 
   it('should render delete mode UI', () => {
     render(
-      <PumpsToolbar
-        {...defaultProps}
-        uiState={{ ...defaultUiState, deleteMode: true }}
-        selectedCount={3}
-      />
+      <PumpsToolbar {...defaultProps} mode={AppMode.DELETE} selectedCount={3} />
     );
 
     expect(screen.queryByTitle('Search pumps')).not.toBeInTheDocument();
@@ -86,28 +71,22 @@ describe('PumpsToolbar', () => {
     expect(mockHandlers.onFilter).toHaveBeenCalledTimes(1);
   });
 
-  it('should call onToggleEditMode when edit button clicked', () => {
+  it('should call onModeChange when edit button clicked', () => {
     render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Enter edit mode'));
-    expect(mockHandlers.onToggleEditMode).toHaveBeenCalledTimes(1);
+    expect(mockHandlers.onModeChange).toHaveBeenCalledWith(AppMode.EDIT);
   });
 
-  it('should call onEnterDeleteMode when delete button clicked', () => {
+  it('should call onModeChange when delete button clicked', () => {
     render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Enter delete mode'));
-    expect(mockHandlers.onEnterDeleteMode).toHaveBeenCalledTimes(1);
+    expect(mockHandlers.onModeChange).toHaveBeenCalledWith(AppMode.DELETE);
   });
 
-  it('should disable all buttons when disabled prop is true', () => {
-    render(
-      <PumpsToolbar
-        {...defaultProps}
-        selectedCount={5}
-        uiState={{ ...defaultUiState, loading: true }}
-      />
-    );
+  it('should disable all buttons when loading is true', () => {
+    render(<PumpsToolbar {...defaultProps} selectedCount={5} loading={true} />);
 
     expect(screen.getByTitle('Search pumps')).toBeDisabled();
     expect(screen.getByTitle('Filter pumps')).toBeDisabled();

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Row, Col, Pagination, Dropdown } from 'react-bootstrap';
+import { AppMode } from '../../../../../types';
 import { getPaginationItems } from '../utils';
 
 interface PaginationSummaryProps {
@@ -8,7 +9,7 @@ interface PaginationSummaryProps {
   total: number;
   totalPages: number;
   selectedCount: number;
-  deleteMode?: boolean;
+  mode?: AppMode;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
 }
@@ -19,10 +20,11 @@ export const PaginationSummary: React.FC<PaginationSummaryProps> = ({
   total,
   totalPages,
   selectedCount,
-  deleteMode = false,
+  mode = AppMode.NORMAL,
   onPageChange,
   onPageSizeChange,
 }) => {
+  const deleteMode = mode === AppMode.DELETE;
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, total);
 

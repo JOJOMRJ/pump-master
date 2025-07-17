@@ -1,12 +1,13 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
+import { AppMode } from '../../../../../types';
 import type { FilterState, FilterOptions } from '../../../../../hooks';
 import { getResponsiveClass } from '../utils';
 import { FilterDropdown } from './FilterDropdown';
 
 interface TableHeaderProps {
   columns: readonly { key: string; label: string; responsive: string }[];
-  deleteMode?: boolean;
+  mode?: AppMode;
   filterMode?: boolean;
   filterOptions?: FilterOptions;
   filters?: FilterState;
@@ -21,7 +22,7 @@ interface TableHeaderProps {
 
 export const TableHeader: React.FC<TableHeaderProps> = ({
   columns,
-  deleteMode = false,
+  mode = AppMode.NORMAL,
   filterMode = false,
   filterOptions,
   filters,
@@ -33,6 +34,7 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   onToggleTypeFilter,
   onToggleAreaFilter,
 }) => {
+  const deleteMode = mode === AppMode.DELETE;
   return (
     <thead className="table-dark">
       <tr>
