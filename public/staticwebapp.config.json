@@ -1,9 +1,18 @@
 {
   "routes": [
     {
+      "route": "/assets/*",
+      "headers": {
+        "cache-control": "public, max-age=31536000"
+      }
+    },
+    {
       "route": "/*",
       "serve": "/index.html",
       "statusCode": 200
     }
-  ]
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html"
+  }
 }
