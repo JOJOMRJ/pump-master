@@ -8,8 +8,7 @@ export const MOCK_USERS: (User & { password: string })[] = [
     password: 'admin123',
     name: 'Admin User',
     role: 'admin',
-    tenantId: 'tenant-informag',
-    createdAt: '2024-01-01T00:00:00Z',
+    permissions: ['view', 'edit', 'delete', 'manage'],
   },
   {
     id: 'user-operator-001',
@@ -17,8 +16,7 @@ export const MOCK_USERS: (User & { password: string })[] = [
     password: 'operator123',
     name: 'Operator User',
     role: 'operator',
-    tenantId: 'tenant-informag',
-    createdAt: '2024-01-01T00:00:00Z',
+    permissions: ['view', 'edit'],
   },
   {
     id: 'user-viewer-001',
@@ -26,7 +24,6 @@ export const MOCK_USERS: (User & { password: string })[] = [
     password: 'viewer123',
     name: 'Viewer User',
     role: 'viewer',
-    tenantId: 'tenant-informag',
-    createdAt: '2024-01-01T00:00:00Z',
+    permissions: ['view'],
   },
 ];

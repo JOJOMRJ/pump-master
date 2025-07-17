@@ -1,13 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { mockAuthService } from '../services/mockAuthService';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'operator' | 'viewer';
-}
+import type { User } from '../types/User';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -53,6 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         name: payload.name || payload.email.split('@')[0], // If no name, use email prefix
         email: payload.email,
         role: payload.role,
+        permissions: payload.permissions || [],
       };
     } catch {
       return null;
