@@ -61,6 +61,15 @@ function App() {
               />
 
               <Route path="/" element={<Navigate to="/login" replace />} />
+
+              <Route
+                path="*"
+                element={
+                  <CenteredContainer>
+                    <h2>404 Not Found</h2>
+                  </CenteredContainer>
+                }
+              />
             </Routes>
           </AppMain>
         </AppLayout>
