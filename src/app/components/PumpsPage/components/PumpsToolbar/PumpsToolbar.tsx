@@ -5,18 +5,13 @@ import { IoSearch, IoClose } from 'react-icons/io5';
 import { HiOutlineFilter } from 'react-icons/hi';
 import { TiPencil } from 'react-icons/ti';
 import { AppMode } from '../../../../types';
-
-interface SearchState {
-  searchQuery: string;
-  onSearch: () => void;
-  onClearSearch: () => void;
-}
+import type { UseSearchReturn } from '../../../../hooks';
 
 interface PumpsToolbarProps {
   selectedCount?: number;
   mode: AppMode;
   loading?: boolean;
-  searchState: SearchState;
+  search: UseSearchReturn;
   filterMode?: boolean;
   hasActiveFilters?: boolean;
   activeFilterCount?: number;
@@ -30,7 +25,7 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
   selectedCount = 0,
   mode,
   loading = false,
-  searchState,
+  search,
   filterMode = false,
   hasActiveFilters = false,
   activeFilterCount = 0,
@@ -41,7 +36,6 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
 }) => {
   const deleteMode = mode === AppMode.DELETE;
   const editMode = mode === AppMode.EDIT;
-  const { searchQuery, onSearch, onClearSearch } = searchState;
   return (
     <Row className="mb-3">
       <Col xs={12}>
@@ -51,24 +45,26 @@ export const PumpsToolbar: React.FC<PumpsToolbarProps> = ({
               <>
                 <div className="d-flex align-items-center gap-1">
                   <Button
-                    variant={searchQuery ? 'primary' : 'outline-secondary'}
+                    variant={
+                      search.searchQuery ? 'primary' : 'outline-secondary'
+                    }
                     className="border-0"
-                    onClick={onSearch}
+                    onClick={search.openSearchModal}
                     disabled={loading}
                     title={
-                      searchQuery
-                        ? `Searching: "${searchQuery}"`
+                      search.searchQuery
+                        ? `Searching: "${search.searchQuery}"`
                         : 'Search pumps'
                     }
                   >
                     <IoSearch />
                   </Button>
-                  {searchQuery && (
+                  {search.searchQuery && (
                     <Button
                       variant="outline-secondary"
                       size="sm"
                       className="border-0"
-                      onClick={onClearSearch}
+                      onClick={search.clearSearch}
                       disabled={loading}
                       title="Clear search"
                     >

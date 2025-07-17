@@ -3,9 +3,9 @@ import { Container } from 'react-bootstrap';
 import type { PumpDevice } from '../../types';
 import { AppMode } from '../../types';
 import { mockPumpService } from '../../services/mockPumpService';
-import { usePagination, useFilter } from '../../hooks';
+import { usePagination, useFilter, useSearch } from '../../hooks';
 import { Loading } from '../../../shared/components';
-import { useSelection, useSearch } from '../../hooks';
+import { useSelection } from '../../hooks';
 import {
   PageHeader,
   PumpsToolbar,
@@ -16,9 +16,14 @@ import {
 export const PumpsPage: React.FC = () => {
   const [pumps, setPumps] = useState<PumpDevice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState<AppMode>(AppMode.NORMAL);
 
   // Pagination management
-  const pagination = usePagination(10);
+  const pagination = usePagination(
+    10,
+    () => selection.clearSelection(), // Clear selections on page change
+    () => selection.clearSelection() // Clear selections on page size change
+  );
 
   // Filter management
   const filter = useFilter(
@@ -34,7 +39,6 @@ export const PumpsPage: React.FC = () => {
         : { types: [], areas: [] };
     }
   );
-  const [mode, setMode] = useState<AppMode>(AppMode.NORMAL);
 
   // Selection management
   const selection = useSelection<PumpDevice>({
@@ -42,17 +46,7 @@ export const PumpsPage: React.FC = () => {
   });
 
   // Search management
-  const search = useSearch({
-    onSearch: () => {
-      pagination.handlePageChange(1);
-    },
-    onClear: () => {
-      pagination.handlePageChange(1);
-    },
-    onPageReset: () => {
-      pagination.handlePageChange(1);
-    },
-  });
+  const search = useSearch();
 
   useEffect(() => {
     const fetchPumps = async () => {
@@ -154,44 +148,12 @@ export const PumpsPage: React.FC = () => {
     // TODO: 触发编辑弹窗逻辑
   };
 
-  const handlePageChange = (page: number) => {
-    pagination.handlePageChange(page);
-    // Clear current page selection state
-    selection.clearSelection();
-  };
-
-  const handlePageSizeChange = (newPageSize: number) => {
-    pagination.handlePageSizeChange(newPageSize);
-    selection.clearSelection(); // Clear selections
-  };
-
   // Server-side pagination - no need to slice data
   const currentPagePumps = pumps;
 
   if (loading) {
     return <Loading />;
   }
-
-  const searchState = {
-    searchQuery: search.searchQuery,
-    onSearch: search.handleSearch,
-    onClearSearch: search.handleClearSearch,
-  };
-  const filterState = {
-    mode: filter.filterMode,
-    options: filter.filterOptions,
-    filters: filter.filters,
-    onToggleType: filter.toggleTypeFilter,
-    onToggleArea: filter.toggleAreaFilter,
-  };
-  const paginationState = {
-    currentPage: pagination.currentPage,
-    pageSize: pagination.pageSize,
-    total: pagination.total,
-    totalPages: pagination.totalPages,
-    onPageChange: handlePageChange,
-    onPageSizeChange: handlePageSizeChange,
-  };
 
   return (
     <Container>
@@ -203,7 +165,7 @@ export const PumpsPage: React.FC = () => {
         selectedCount={selection.selectedCount}
         mode={mode}
         loading={loading}
-        searchState={searchState}
+        search={search}
         filterMode={filter.filterMode}
         hasActiveFilters={filter.hasActiveFilters}
         activeFilterCount={filter.activeFilterCount}
@@ -219,8 +181,8 @@ export const PumpsPage: React.FC = () => {
         selectedPumps={selection.selectedItems}
         mode={mode}
         loading={loading}
-        filterState={filterState}
-        paginationState={paginationState}
+        filter={filter}
+        pagination={pagination}
         onSelectionChange={handleSelectionChange}
         onPumpEdit={handlePumpEdit}
       />
@@ -229,7 +191,9 @@ export const PumpsPage: React.FC = () => {
       <SearchModal
         show={search.showSearchModal}
         currentQuery={search.searchQuery}
-        onSubmit={search.handleSearchSubmit}
+        onSubmit={query =>
+          search.handleSearchSubmit(query, pagination.handlePageChange)
+        }
         onCancel={search.handleSearchCancel}
       />
     </Container>

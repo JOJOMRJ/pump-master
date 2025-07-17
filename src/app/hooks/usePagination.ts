@@ -20,7 +20,9 @@ export interface UsePaginationReturn
     PaginationActions {}
 
 export const usePagination = (
-  initialPageSize: number = 10
+  initialPageSize: number = 10,
+  onPageChange?: () => void,
+  onPageSizeChange?: () => void
 ): UsePaginationReturn => {
   // User input states - control API requests
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,14 +32,22 @@ export const usePagination = (
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setCurrentPage(page);
+      onPageChange?.();
+    },
+    [onPageChange]
+  );
 
-  const handlePageSizeChange = useCallback((size: number) => {
-    setPageSize(size);
-    setCurrentPage(1); // Reset to first page when changing page size
-  }, []);
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      setPageSize(size);
+      setCurrentPage(1); // Reset to first page when changing page size
+      onPageSizeChange?.();
+    },
+    [onPageSizeChange]
+  );
 
   const reset = useCallback(() => {
     setCurrentPage(1);

@@ -14,3 +14,4 @@ export type {
 } from './useFilter';
 export { useSelection } from './useSelection';
 export { useSearch } from './useSearch';
+export type { UseSearchReturn } from './useSearch';

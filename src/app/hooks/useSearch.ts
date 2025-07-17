@@ -2,26 +2,24 @@ import { useState, useCallback } from 'react';
 
 interface UseSearchOptions {
   initialQuery?: string;
-  onSearch?: (query: string) => void;
-  onClear?: () => void;
-  onPageReset?: () => void;
 }
 
-interface UseSearchReturn {
+export interface UseSearchReturn {
   searchQuery: string;
   showSearchModal: boolean;
   setSearchQuery: (query: string) => void;
   openSearchModal: () => void;
   closeSearchModal: () => void;
   clearSearch: () => void;
-  handleSearch: () => void;
-  handleClearSearch: () => void;
-  handleSearchSubmit: (query: string) => void;
+  handleSearchSubmit: (
+    query: string,
+    onPageChange?: (page: number) => void
+  ) => void;
   handleSearchCancel: () => void;
 }
 
 export const useSearch = (options: UseSearchOptions = {}): UseSearchReturn => {
-  const { initialQuery = '', onSearch, onClear, onPageReset } = options;
+  const { initialQuery = '' } = options;
 
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -36,31 +34,21 @@ export const useSearch = (options: UseSearchOptions = {}): UseSearchReturn => {
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');
-    onClear?.();
-  }, [onClear]);
-
-  const handleSearch = useCallback(() => {
-    openSearchModal();
-    onSearch?.(searchQuery);
-  }, [openSearchModal, onSearch, searchQuery]);
-
-  const handleClearSearch = useCallback(() => {
-    clearSearch();
-    onClear?.();
-  }, [clearSearch, onClear]);
+  }, []);
 
   const handleSearchSubmit = useCallback(
-    (query: string) => {
+    (query: string, onPageChange?: (page: number) => void) => {
       setSearchQuery(query);
       closeSearchModal();
-      onPageReset?.(); // Reset to first page when searching
+      onPageChange?.(1); // Reset to first page when searching
     },
-    [closeSearchModal, onPageReset]
+    [closeSearchModal]
   );
 
   const handleSearchCancel = useCallback(() => {
+    clearSearch();
     closeSearchModal();
-  }, [closeSearchModal]);
+  }, [clearSearch, closeSearchModal]);
 
   return {
     searchQuery,
@@ -69,8 +57,6 @@ export const useSearch = (options: UseSearchOptions = {}): UseSearchReturn => {
     openSearchModal,
     closeSearchModal,
     clearSearch,
-    handleSearch,
-    handleClearSearch,
     handleSearchSubmit,
     handleSearchCancel,
   };

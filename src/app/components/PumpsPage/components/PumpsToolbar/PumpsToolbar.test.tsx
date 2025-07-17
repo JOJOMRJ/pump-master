@@ -10,17 +10,22 @@ describe('PumpsToolbar', () => {
     onModeChange: vi.fn(),
   };
 
-  const defaultSearchState = {
+  const mockSearch = {
     searchQuery: '',
-    onSearch: vi.fn(),
-    onClearSearch: vi.fn(),
+    showSearchModal: false,
+    setSearchQuery: vi.fn(),
+    openSearchModal: vi.fn(),
+    closeSearchModal: vi.fn(),
+    clearSearch: vi.fn(),
+    handleSearchSubmit: vi.fn(),
+    handleSearchCancel: vi.fn(),
   };
 
   const defaultProps = {
     ...mockHandlers,
     mode: AppMode.NORMAL,
     loading: false,
-    searchState: defaultSearchState,
+    search: mockSearch,
   };
 
   beforeEach(() => {
@@ -57,11 +62,11 @@ describe('PumpsToolbar', () => {
     expect(screen.getByText('Cancel')).toBeInTheDocument();
   });
 
-  it('should call onSearch when search button clicked', () => {
+  it('should call openSearchModal when search button clicked', () => {
     render(<PumpsToolbar {...defaultProps} />);
 
     fireEvent.click(screen.getByTitle('Search pumps'));
-    expect(defaultSearchState.onSearch).toHaveBeenCalledTimes(1);
+    expect(mockSearch.openSearchModal).toHaveBeenCalledTimes(1);
   });
 
   it('should call onFilter when filter button clicked', () => {

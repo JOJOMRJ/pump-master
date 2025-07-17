@@ -1,37 +1,22 @@
 import React from 'react';
 import type { PumpDevice } from '../../../../types';
 import { AppMode } from '../../../../types';
-import type { FilterState, FilterOptions } from '../../../../hooks';
+import type { UseFilterReturn } from '../../../../hooks';
 import {
   MobileCardView,
   DesktopTableView,
   PaginationSummary,
 } from './components';
 
-interface FilterStateProps {
-  mode: boolean;
-  options: FilterOptions;
-  filters: FilterState;
-  onToggleType: (type: string) => void;
-  onToggleArea: (area: string) => void;
-}
-
-interface PaginationStateProps {
-  currentPage: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-  onPageChange?: (page: number) => void;
-  onPageSizeChange?: (pageSize: number) => void;
-}
+import type { UsePaginationReturn } from '../../../../hooks';
 
 interface PumpsTableProps {
   pumps: PumpDevice[];
   selectedPumps: Set<string>;
   mode: AppMode;
   loading?: boolean;
-  filterState: FilterStateProps;
-  paginationState: PaginationStateProps;
+  filter: UseFilterReturn;
+  pagination: UsePaginationReturn;
   onSelectionChange: (selectedIds: Set<string>) => void;
   onPumpEdit?: (pumpId: string) => void;
 }
@@ -41,8 +26,8 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
   selectedPumps,
   mode,
   loading = false,
-  filterState,
-  paginationState,
+  filter,
+  pagination,
   onSelectionChange,
   onPumpEdit,
 }) => {
@@ -112,9 +97,9 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
         pumps={pumps}
         selectedPumps={selectedPumps}
         mode={mode}
-        filterMode={filterState.mode}
-        filterOptions={filterState.options}
-        filters={filterState.filters}
+        filterMode={filter.filterMode}
+        filterOptions={filter.filterOptions}
+        filters={filter.filters}
         loading={loading}
         columns={columns}
         isAllSelected={isAllSelected}
@@ -122,20 +107,20 @@ export const PumpsTable: React.FC<PumpsTableProps> = ({
         onSelectAll={handleSelectAll}
         onRowSelect={handleRowSelect}
         onRowClick={handleRowClick}
-        onToggleTypeFilter={filterState.onToggleType}
-        onToggleAreaFilter={filterState.onToggleArea}
+        onToggleTypeFilter={filter.toggleTypeFilter}
+        onToggleAreaFilter={filter.toggleAreaFilter}
       />
 
       {/* Summary and Pagination */}
       <PaginationSummary
-        currentPage={paginationState.currentPage}
-        pageSize={paginationState.pageSize}
-        total={paginationState.total}
-        totalPages={paginationState.totalPages}
+        currentPage={pagination.currentPage}
+        pageSize={pagination.pageSize}
+        total={pagination.total}
+        totalPages={pagination.totalPages}
         selectedCount={selectedPumps.size}
         mode={mode}
-        onPageChange={paginationState.onPageChange}
-        onPageSizeChange={paginationState.onPageSizeChange}
+        onPageChange={pagination.handlePageChange}
+        onPageSizeChange={pagination.handlePageSizeChange}
       />
     </>
   );
