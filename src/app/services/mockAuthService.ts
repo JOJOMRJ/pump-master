@@ -21,7 +21,7 @@ const generateToken = (user: User): string => {
       role: user.role,
       name: user.name,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 15 * 60, // 15 minutes expiration
+      exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24 hours expiration
     })
   );
   return `${header}.${payload}.mock-signature`;
@@ -65,7 +65,7 @@ export const login = async (
       data: {
         user,
         token: generateToken(user),
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // Expires in 15 minutes
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       },
     };
   } catch {

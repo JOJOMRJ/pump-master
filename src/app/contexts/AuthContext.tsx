@@ -12,6 +12,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -33,6 +34,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   const isTokenExpired = (token: string): boolean => {
     try {
@@ -59,6 +61,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      setIsLoading(true);
+
       // Use Mock authentication service instead of hardcoded logic
       const response = await mockAuthService.login({ email, password });
 
@@ -67,12 +71,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('token', response.data.token);
         setUser(response.data.user);
         setIsAuthenticated(true);
+        setIsLoading(false);
         return true;
       }
 
+      setIsLoading(false);
       return false;
     } catch (error) {
       console.error('Login failed:', error);
+      setIsLoading(false);
       return false;
     }
   };
@@ -82,6 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
+    setIsLoading(false);
   };
 
   // Check for token in localStorage on app startup
@@ -89,11 +97,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const token = localStorage.getItem('token');
 
     // No token, return early
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
     // Token expired, clear and return
     if (isTokenExpired(token)) {
       localStorage.removeItem('token');
+      setIsLoading(false);
       return;
     }
 
@@ -102,12 +114,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!user) {
       // Token parsing failed, clear invalid token
       localStorage.removeItem('token');
+      setIsLoading(false);
       return;
     }
 
     // Successfully parsed, restore login state
     setUser(user);
     setIsAuthenticated(true);
+    setIsLoading(false);
   }, []);
 
   return (
@@ -115,6 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{
         isAuthenticated,
         user,
+        isLoading,
         login,
         logout,
       }}
