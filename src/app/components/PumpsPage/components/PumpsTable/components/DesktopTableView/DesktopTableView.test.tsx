@@ -11,7 +11,7 @@ describe('DesktopTableView', () => {
       type: 'Centrifugal',
       areaBlock: 'Area A',
       latitude: 40.7128,
-      longitude: -74.0060,
+      longitude: -74.006,
       flowRate: { value: 150, unit: 'GPM' },
       offset: { value: 30, unit: 'sec' },
       currentPressure: { value: 45, unit: 'psi' },
@@ -34,9 +34,9 @@ describe('DesktopTableView', () => {
   ];
 
   const defaultColumns = [
-    { key: 'name', label: 'Name', responsive: '' },
-    { key: 'type', label: 'Type', responsive: 'd-none d-md-table-cell' },
-    { key: 'areaBlock', label: 'Area', responsive: 'd-none d-lg-table-cell' },
+    { key: 'name', label: 'Name', responsive: 'always' },
+    { key: 'type', label: 'Type', responsive: 'md' },
+    { key: 'areaBlock', label: 'Area', responsive: 'lg' },
   ];
 
   const defaultProps = {
@@ -58,7 +58,7 @@ describe('DesktopTableView', () => {
 
   it('renders table with pumps data', () => {
     render(<DesktopTableView {...defaultProps} />);
-    
+
     expect(screen.getByText('Pump 1')).toBeInTheDocument();
     expect(screen.getByText('Pump 2')).toBeInTheDocument();
     expect(screen.getByText('Centrifugal')).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe('DesktopTableView', () => {
 
   it('renders table headers', () => {
     render(<DesktopTableView {...defaultProps} />);
-    
+
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByText('Type')).toBeInTheDocument();
     expect(screen.getByText('Area')).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe('DesktopTableView', () => {
 
   it('renders checkboxes in delete mode', () => {
     render(<DesktopTableView {...defaultProps} mode={AppMode.DELETE} />);
-    
+
     const checkboxes = screen.getAllByRole('checkbox');
     expect(checkboxes).toHaveLength(3); // 1 for select all + 2 for rows
   });
@@ -89,10 +89,10 @@ describe('DesktopTableView', () => {
         selectedPumps={selectedPumps}
       />
     );
-    
+
     const rows = screen.getAllByRole('row');
     const dataRows = rows.slice(1); // Skip header row
-    
+
     expect(dataRows[0]).toHaveClass('table-active');
     expect(dataRows[1]).not.toHaveClass('table-active');
   });
@@ -106,13 +106,13 @@ describe('DesktopTableView', () => {
         onRowClick={onRowClick}
       />
     );
-    
+
     const rows = screen.getAllByRole('row');
     const firstDataRow = rows[1]; // Skip header row
-    
+
     expect(firstDataRow).toHaveClass('pump-row-clickable');
     expect(firstDataRow).toHaveStyle('cursor: pointer');
-    
+
     fireEvent.click(firstDataRow);
     expect(onRowClick).toHaveBeenCalledWith('pump-1');
   });
@@ -126,10 +126,10 @@ describe('DesktopTableView', () => {
         onRowSelect={onRowSelect}
       />
     );
-    
+
     const checkboxes = screen.getAllByRole('checkbox');
     const firstRowCheckbox = checkboxes[1]; // Skip select all checkbox
-    
+
     fireEvent.click(firstRowCheckbox);
     expect(onRowSelect).toHaveBeenCalledWith('pump-1', true);
   });
@@ -143,10 +143,10 @@ describe('DesktopTableView', () => {
         onRowClick={onRowClick}
       />
     );
-    
+
     const checkboxes = screen.getAllByRole('checkbox');
     const firstRowCheckbox = checkboxes[1]; // Skip select all checkbox
-    
+
     fireEvent.click(firstRowCheckbox);
     expect(onRowClick).not.toHaveBeenCalled();
   });
@@ -159,7 +159,7 @@ describe('DesktopTableView', () => {
         loading={true}
       />
     );
-    
+
     const checkboxes = screen.getAllByRole('checkbox');
     checkboxes.forEach(checkbox => {
       expect(checkbox).toBeDisabled();
@@ -168,19 +168,15 @@ describe('DesktopTableView', () => {
 
   it('shows no pumps message when empty', () => {
     render(<DesktopTableView {...defaultProps} pumps={[]} />);
-    
+
     expect(screen.getByText('No pumps found')).toBeInTheDocument();
   });
 
   it('shows no pumps message with correct colspan in delete mode', () => {
     render(
-      <DesktopTableView
-        {...defaultProps}
-        pumps={[]}
-        mode={AppMode.DELETE}
-      />
+      <DesktopTableView {...defaultProps} pumps={[]} mode={AppMode.DELETE} />
     );
-    
+
     const noDataCell = screen.getByText('No pumps found');
     expect(noDataCell).toHaveAttribute('colspan', '4'); // 3 columns + 1 checkbox column
   });
@@ -205,7 +201,7 @@ describe('DesktopTableView', () => {
         onToggleAreaFilter={vi.fn()}
       />
     );
-    
+
     // TableHeader should receive these props and render accordingly
     expect(screen.getByText('Name')).toBeInTheDocument();
     expect(screen.getByText('Type')).toBeInTheDocument();
@@ -223,31 +219,31 @@ describe('DesktopTableView', () => {
         onToggleAreaFilter={undefined}
       />
     );
-    
+
     expect(screen.getByText('Pump 1')).toBeInTheDocument();
     expect(screen.getByText('Pump 2')).toBeInTheDocument();
   });
 
   it('applies responsive classes to table cells', () => {
     render(<DesktopTableView {...defaultProps} />);
-    
+
     const rows = screen.getAllByRole('row');
     const firstDataRow = rows[1]; // Skip header row
     const cells = firstDataRow.querySelectorAll('td');
-    
+
     // First cell (name) should not have responsive class
     expect(cells[0]).not.toHaveClass('d-none');
-    
+
     // Second cell (type) should have responsive class
     expect(cells[1]).toHaveClass('d-none', 'd-md-table-cell');
-    
+
     // Third cell (area) should have responsive class
     expect(cells[2]).toHaveClass('d-none', 'd-lg-table-cell');
   });
 
   it('is hidden on mobile devices', () => {
     const { container } = render(<DesktopTableView {...defaultProps} />);
-    
+
     const tableContainer = container.firstChild;
     expect(tableContainer).toHaveClass('d-none', 'd-md-block');
   });

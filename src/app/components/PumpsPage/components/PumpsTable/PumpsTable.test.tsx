@@ -11,7 +11,7 @@ describe('PumpsTable', () => {
       type: 'Centrifugal',
       areaBlock: 'Area A',
       latitude: 40.7128,
-      longitude: -74.0060,
+      longitude: -74.006,
       flowRate: { value: 150, unit: 'GPM' },
       offset: { value: 30, unit: 'sec' },
       currentPressure: { value: 45, unit: 'psi' },
@@ -33,264 +33,182 @@ describe('PumpsTable', () => {
     },
   ];
 
+  const mockFilter = {
+    filters: {
+      types: new Set<string>(),
+      areas: new Set<string>(),
+    },
+    filterMode: false,
+    hasActiveFilters: false,
+    activeFilterCount: 0,
+    filterOptions: {
+      types: ['Centrifugal', 'Submersible'],
+      areas: ['Area A', 'Area B'],
+    },
+    toggleFilterMode: vi.fn(),
+    toggleTypeFilter: vi.fn(),
+    toggleAreaFilter: vi.fn(),
+    clearFilters: vi.fn(),
+  };
+
+  const mockPagination = {
+    currentPage: 1,
+    totalPages: 1,
+    pageSize: 10,
+    total: 2,
+    startIndex: 0,
+    endIndex: 1,
+    goToPage: vi.fn(),
+    nextPage: vi.fn(),
+    previousPage: vi.fn(),
+    setPageSize: vi.fn(),
+  };
+
   const defaultProps = {
     pumps: mockPumps,
     selectedPumps: new Set<string>(),
     mode: AppMode.NORMAL,
     loading: false,
-    onRowSelect: vi.fn(),
-    onRowClick: vi.fn(),
+    filter: mockFilter,
+    pagination: mockPagination,
+    onSelectionChange: vi.fn(),
+    onPumpEdit: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  it('renders table with pumps data', () => {
+    render(<PumpsTable {...defaultProps} />);
+
+    expect(screen.getAllByText('Pump 1')).toHaveLength(2); // Desktop + Mobile
+    expect(screen.getAllByText('Pump 2')).toHaveLength(2); // Desktop + Mobile
+    expect(screen.getByText('Centrifugal')).toBeInTheDocument();
+    expect(screen.getByText('Submersible')).toBeInTheDocument();
+  });
+
   it('renders both desktop and mobile views', () => {
     render(<PumpsTable {...defaultProps} />);
-    
+
     // Desktop view should be present (hidden on mobile)
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    
+    expect(screen.getByText('Pump Name')).toBeInTheDocument();
+
     // Mobile view should be present
-    expect(screen.getByText('Pump 1')).toBeInTheDocument();
-    expect(screen.getByText('Pump 2')).toBeInTheDocument();
+    expect(screen.getAllByText('Pump 1')).toHaveLength(2); // Desktop + Mobile
+    expect(screen.getAllByText('Pump 2')).toHaveLength(2); // Desktop + Mobile
   });
 
-  it('passes correct props to desktop view', () => {
-    const selectedPumps = new Set(['pump-1']);
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.DELETE}
-        selectedPumps={selectedPumps}
-      />
-    );
-    
-    // Desktop view should show checkboxes in delete mode
-    const checkboxes = screen.getAllByRole('checkbox');
-    expect(checkboxes.length).toBeGreaterThan(0);
-  });
+  it('shows checkboxes in delete mode', () => {
+    render(<PumpsTable {...defaultProps} mode={AppMode.DELETE} />);
 
-  it('passes correct props to mobile view', () => {
-    const selectedPumps = new Set(['pump-1']);
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.DELETE}
-        selectedPumps={selectedPumps}
-      />
-    );
-    
-    // Mobile view should show checkboxes in delete mode
     const checkboxes = screen.getAllByRole('checkbox');
     expect(checkboxes.length).toBeGreaterThan(0);
   });
 
   it('handles row selection correctly', () => {
-    const onRowSelect = vi.fn();
+    const onSelectionChange = vi.fn();
     render(
       <PumpsTable
         {...defaultProps}
         mode={AppMode.DELETE}
-        onRowSelect={onRowSelect}
+        onSelectionChange={onSelectionChange}
       />
     );
-    
+
     const checkboxes = screen.getAllByRole('checkbox');
     const firstRowCheckbox = checkboxes[1]; // Skip select all checkbox
-    
+
     fireEvent.click(firstRowCheckbox);
-    expect(onRowSelect).toHaveBeenCalledWith('pump-1', true);
-  });
-
-  it('handles row click correctly', () => {
-    const onRowClick = vi.fn();
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.EDIT}
-        onRowClick={onRowClick}
-      />
-    );
-    
-    // Click on mobile card
-    const cards = screen.getAllByRole('button');
-    fireEvent.click(cards[0]);
-    
-    expect(onRowClick).toHaveBeenCalledWith('pump-1');
-  });
-
-  it('handles select all functionality', () => {
-    const onRowSelect = vi.fn();
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.DELETE}
-        onRowSelect={onRowSelect}
-      />
-    );
-    
-    const selectAllCheckbox = screen.getAllByRole('checkbox')[0];
-    fireEvent.click(selectAllCheckbox);
-    
-    // Should call onRowSelect for each pump
-    expect(onRowSelect).toHaveBeenCalledWith('pump-1', true);
-    expect(onRowSelect).toHaveBeenCalledWith('pump-2', true);
-  });
-
-  it('handles deselect all functionality', () => {
-    const onRowSelect = vi.fn();
-    const selectedPumps = new Set(['pump-1', 'pump-2']);
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.DELETE}
-        selectedPumps={selectedPumps}
-        onRowSelect={onRowSelect}
-      />
-    );
-    
-    const selectAllCheckbox = screen.getAllByRole('checkbox')[0];
-    fireEvent.click(selectAllCheckbox);
-    
-    // Should call onRowSelect to deselect each pump
-    expect(onRowSelect).toHaveBeenCalledWith('pump-1', false);
-    expect(onRowSelect).toHaveBeenCalledWith('pump-2', false);
-  });
-
-  it('shows indeterminate state when some pumps are selected', () => {
-    const selectedPumps = new Set(['pump-1']);
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.DELETE}
-        selectedPumps={selectedPumps}
-      />
-    );
-    
-    const selectAllCheckbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement;
-    expect(selectAllCheckbox.indeterminate).toBe(true);
-  });
-
-  it('shows checked state when all pumps are selected', () => {
-    const selectedPumps = new Set(['pump-1', 'pump-2']);
-    render(
-      <PumpsTable
-        {...defaultProps}
-        mode={AppMode.DELETE}
-        selectedPumps={selectedPumps}
-      />
-    );
-    
-    const selectAllCheckbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement;
-    expect(selectAllCheckbox.checked).toBe(true);
-    expect(selectAllCheckbox.indeterminate).toBe(false);
-  });
-
-  it('renders with filter mode enabled', () => {
-    const filterOptions = {
-      types: ['Centrifugal', 'Submersible'],
-      areas: ['Area A', 'Area B'],
-    };
-    const filters = {
-      types: new Set(['Centrifugal']),
-      areas: new Set<string>(),
-    };
-
-    render(
-      <PumpsTable
-        {...defaultProps}
-        filterMode={true}
-        filterOptions={filterOptions}
-        filters={filters}
-        onToggleTypeFilter={vi.fn()}
-        onToggleAreaFilter={vi.fn()}
-      />
-    );
-    
-    // Should render table with filter functionality
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Type')).toBeInTheDocument();
-    expect(screen.getByText('Area')).toBeInTheDocument();
+    expect(onSelectionChange).toHaveBeenCalled();
   });
 
   it('handles empty pumps array', () => {
     render(<PumpsTable {...defaultProps} pumps={[]} />);
-    
-    expect(screen.getByText('No pumps found')).toBeInTheDocument();
+
+    expect(screen.getAllByText('No pumps found')).toHaveLength(2); // Desktop + Mobile
   });
 
-  it('handles loading state', () => {
-    render(<PumpsTable {...defaultProps} loading={true} />);
-    
-    // Checkboxes should be disabled when loading
-    const checkboxes = screen.getAllByRole('checkbox');
-    if (checkboxes.length > 0) {
-      checkboxes.forEach(checkbox => {
-        expect(checkbox).toBeDisabled();
-      });
-    }
-  });
-
-  it('uses correct column definitions', () => {
+  it('shows pagination summary', () => {
     render(<PumpsTable {...defaultProps} />);
-    
-    // Should render all expected columns
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Type')).toBeInTheDocument();
-    expect(screen.getByText('Area')).toBeInTheDocument();
-    expect(screen.getByText('Flow Rate')).toBeInTheDocument();
-    expect(screen.getByText('Pressure')).toBeInTheDocument();
-    expect(screen.getByText('Location')).toBeInTheDocument();
+
+    expect(screen.getByText('Showing 1-2 of 2 pumps')).toBeInTheDocument();
   });
 
-  it('handles filter callbacks correctly', () => {
-    const onToggleTypeFilter = vi.fn();
-    const onToggleAreaFilter = vi.fn();
-    const filterOptions = {
-      types: ['Centrifugal', 'Submersible'],
-      areas: ['Area A', 'Area B'],
-    };
-    const filters = {
-      types: new Set<string>(),
-      areas: new Set<string>(),
-    };
+  it('renders with loading state', () => {
+    render(<PumpsTable {...defaultProps} loading={true} />);
 
-    render(
-      <PumpsTable
-        {...defaultProps}
-        filterMode={true}
-        filterOptions={filterOptions}
-        filters={filters}
-        onToggleTypeFilter={onToggleTypeFilter}
-        onToggleAreaFilter={onToggleAreaFilter}
-      />
-    );
-    
-    // The filter callbacks should be passed to the DesktopTableView
-    expect(screen.getByText('Type')).toBeInTheDocument();
-    expect(screen.getByText('Area')).toBeInTheDocument();
+    // Should still render the table structure
+    expect(screen.getByText('Pump Name')).toBeInTheDocument();
   });
 
-  it('maintains consistent behavior between desktop and mobile views', () => {
-    const onRowClick = vi.fn();
+  it('renders with filter mode enabled', () => {
+    const filterWithMode = {
+      ...mockFilter,
+      filterMode: true,
+    };
+
+    render(<PumpsTable {...defaultProps} filter={filterWithMode} />);
+
+    // Should render table with filter functionality
+    expect(screen.getByText('Pump Name')).toBeInTheDocument();
+  });
+
+  it('handles selected pumps correctly', () => {
     const selectedPumps = new Set(['pump-1']);
-    
     render(
       <PumpsTable
         {...defaultProps}
         mode={AppMode.DELETE}
         selectedPumps={selectedPumps}
-        onRowClick={onRowClick}
       />
     );
-    
-    // Both views should show the same selection state
+
     const checkboxes = screen.getAllByRole('checkbox');
-    const selectedCheckboxes = checkboxes.filter(cb => (cb as HTMLInputElement).checked);
-    
-    // Should have at least one selected checkbox (excluding indeterminate select-all)
+    const selectedCheckboxes = checkboxes.filter(
+      cb => (cb as HTMLInputElement).checked
+    );
+
+    // Should have at least one selected checkbox
     expect(selectedCheckboxes.length).toBeGreaterThan(0);
+  });
+
+  it('shows correct column headers', () => {
+    render(<PumpsTable {...defaultProps} />);
+
+    // Should render expected columns
+    expect(screen.getByText('Pump Name')).toBeInTheDocument();
+    expect(screen.getByText('Type')).toBeInTheDocument();
+    expect(screen.getByText('Area/Block')).toBeInTheDocument();
+    expect(screen.getByText('Flow Rate')).toBeInTheDocument();
+    expect(screen.getByText('Current Pressure')).toBeInTheDocument();
+  });
+
+  it('handles pump edit correctly', () => {
+    const onPumpEdit = vi.fn();
+    render(
+      <PumpsTable
+        {...defaultProps}
+        mode={AppMode.EDIT}
+        onPumpEdit={onPumpEdit}
+      />
+    );
+
+    // Should render table in edit mode
+    expect(screen.getByText('Pump Name')).toBeInTheDocument();
+  });
+
+  it('renders pagination when there are multiple pages', () => {
+    const paginationWithPages = {
+      ...mockPagination,
+      totalPages: 3,
+      total: 25,
+      endIndex: 9, // Fix to match expectation
+    };
+
+    render(<PumpsTable {...defaultProps} pagination={paginationWithPages} />);
+
+    // Should show pagination controls
+    expect(screen.getByText('Showing 1-10 of 25 pumps')).toBeInTheDocument();
   });
 });

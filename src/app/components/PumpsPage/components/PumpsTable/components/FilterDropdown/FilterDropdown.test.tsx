@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { FilterDropdown } from './FilterDropdown';
 
 describe('FilterDropdown', () => {
@@ -25,24 +25,28 @@ describe('FilterDropdown', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('shows dropdown when button is clicked', () => {
+  it('shows dropdown when button is clicked', async () => {
     render(<FilterDropdown {...defaultProps} />);
     const button = screen.getByRole('button', { name: 'Filter by Type' });
-    
-    fireEvent.click(button);
-    
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
     expect(screen.getByText('Filter by Type')).toBeInTheDocument();
     expect(screen.getByText('Centrifugal')).toBeInTheDocument();
     expect(screen.getByText('Submersible')).toBeInTheDocument();
     expect(screen.getByText('Jet')).toBeInTheDocument();
   });
 
-  it('displays checkboxes for all options', () => {
+  it('displays checkboxes for all options', async () => {
     render(<FilterDropdown {...defaultProps} />);
     const button = screen.getByRole('button', { name: 'Filter by Type' });
-    
-    fireEvent.click(button);
-    
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
     defaultProps.options.forEach(option => {
       const checkbox = screen.getByRole('checkbox', { name: option });
       expect(checkbox).toBeInTheDocument();
@@ -50,43 +54,57 @@ describe('FilterDropdown', () => {
     });
   });
 
-  it('shows selected values as checked', () => {
+  it('shows selected values as checked', async () => {
     const selectedValues = new Set(['Centrifugal', 'Jet']);
-    render(<FilterDropdown {...defaultProps} selectedValues={selectedValues} />);
+    render(
+      <FilterDropdown {...defaultProps} selectedValues={selectedValues} />
+    );
     const button = screen.getByRole('button', { name: 'Filter by Type' });
-    
-    fireEvent.click(button);
-    
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
     expect(screen.getByRole('checkbox', { name: 'Centrifugal' })).toBeChecked();
-    expect(screen.getByRole('checkbox', { name: 'Submersible' })).not.toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: 'Submersible' })
+    ).not.toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Jet' })).toBeChecked();
   });
 
-  it('calls onToggle when checkbox is clicked', () => {
+  it('calls onToggle when checkbox is clicked', async () => {
     const onToggle = vi.fn();
     render(<FilterDropdown {...defaultProps} onToggle={onToggle} />);
     const button = screen.getByRole('button', { name: 'Filter by Type' });
-    
-    fireEvent.click(button);
-    
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
     const checkbox = screen.getByRole('checkbox', { name: 'Centrifugal' });
-    fireEvent.click(checkbox);
-    
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+
     expect(onToggle).toHaveBeenCalledWith('Centrifugal');
   });
 
-  it('closes dropdown when clicking outside', () => {
+  it('closes dropdown when clicking outside', async () => {
     render(<FilterDropdown {...defaultProps} />);
     const button = screen.getByRole('button', { name: 'Filter by Type' });
-    
-    fireEvent.click(button);
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
     expect(screen.getByText('Filter by Type')).toBeInTheDocument();
-    
-    fireEvent.click(document.body);
+
+    await act(async () => {
+      fireEvent.click(document.body);
+    });
     expect(screen.queryByText('Filter by Type')).not.toBeInTheDocument();
   });
 
-  it('handles area block filter type correctly', () => {
+  it('handles area block filter type correctly', async () => {
     const areaOptions = ['Area A', 'Area B', 'Area C'];
     render(
       <FilterDropdown
@@ -96,21 +114,25 @@ describe('FilterDropdown', () => {
       />
     );
     const button = screen.getByRole('button', { name: 'Filter by Area' });
-    
-    fireEvent.click(button);
-    
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
     expect(screen.getByText('Filter by Area')).toBeInTheDocument();
     areaOptions.forEach(option => {
       expect(screen.getByText(option)).toBeInTheDocument();
     });
   });
 
-  it('handles empty options array', () => {
+  it('handles empty options array', async () => {
     render(<FilterDropdown {...defaultProps} options={[]} />);
     const button = screen.getByRole('button', { name: 'Filter by Type' });
-    
-    fireEvent.click(button);
-    
+
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
     expect(screen.getByText('Filter by Type')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
   });

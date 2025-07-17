@@ -2,139 +2,101 @@ import { render, screen } from '@testing-library/react';
 import { Loading } from './Loading';
 
 describe('Loading', () => {
-  it('renders loading spinner by default', () => {
+  it('renders with default props', () => {
     render(<Loading />);
-    
+
     const spinner = screen.getByRole('status');
     expect(spinner).toBeInTheDocument();
-  });
-
-  it('renders with default loading text', () => {
-    render(<Loading />);
-    
+    expect(spinner).toHaveClass('spinner-border');
+    expect(spinner).toHaveClass('text-primary');
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
   it('renders with custom text', () => {
-    render(<Loading text="Please wait..." />);
-    
-    expect(screen.getByText('Please wait...')).toBeInTheDocument();
-  });
+    render(<Loading message="Please wait..." />);
 
-  it('has proper Bootstrap spinner classes', () => {
-    render(<Loading />);
-    
-    const spinner = screen.getByRole('status');
-    expect(spinner).toHaveClass('spinner-border');
+    expect(screen.getByText('Please wait...')).toBeInTheDocument();
   });
 
   it('has proper accessibility attributes', () => {
     render(<Loading />);
-    
-    const spinner = screen.getByRole('status');
-    expect(spinner).toHaveAttribute('aria-hidden', 'true');
-  });
 
-  it('has screen reader text', () => {
-    render(<Loading />);
-    
-    const srText = screen.getByText('Loading...');
-    expect(srText).toHaveClass('visually-hidden');
-  });
-
-  it('centers content by default', () => {
-    const { container } = render(<Loading />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('d-flex', 'justify-content-center', 'align-items-center');
-  });
-
-  it('applies custom className', () => {
-    const { container } = render(<Loading className="custom-class" />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('custom-class');
-  });
-
-  it('maintains default classes with custom className', () => {
-    const { container } = render(<Loading className="custom-class" />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('d-flex', 'justify-content-center', 'align-items-center', 'custom-class');
-  });
-
-  it('has proper spacing', () => {
-    const { container } = render(<Loading />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('py-4');
-  });
-
-  it('renders spinner with primary color', () => {
-    render(<Loading />);
-    
-    const spinner = screen.getByRole('status');
-    expect(spinner).toHaveClass('text-primary');
-  });
-
-  it('has proper gap between spinner and text', () => {
-    const { container } = render(<Loading />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('gap-2');
-  });
-
-  it('renders text with proper styling', () => {
-    render(<Loading />);
-    
-    const text = screen.getByText('Loading...');
-    expect(text).toHaveClass('text-muted');
-  });
-
-  it('works with empty text', () => {
-    render(<Loading text="" />);
-    
     const spinner = screen.getByRole('status');
     expect(spinner).toBeInTheDocument();
-    expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+
+    const hiddenText = screen.getByText('Loading...');
+    expect(hiddenText).toHaveClass('visually-hidden');
   });
 
-  it('handles long loading text', () => {
-    const longText = 'Please wait while we load your data...';
-    render(<Loading text={longText} />);
-    
-    expect(screen.getByText(longText)).toBeInTheDocument();
-  });
+  it('applies custom height', () => {
+    const { container } = render(<Loading height="300px" />);
 
-  it('has proper structure', () => {
-    const { container } = render(<Loading />);
-    
     const wrapper = container.firstChild;
-    const spinner = wrapper?.querySelector('.spinner-border');
-    const text = wrapper?.querySelector('.text-muted');
-    
+    expect(wrapper).toHaveStyle('height: 300px');
+  });
+
+  it('applies custom size', () => {
+    render(<Loading size="sm" />);
+
+    const spinner = screen.getByRole('status');
+    expect(spinner).toHaveClass('spinner-border-sm');
+  });
+
+  it('applies custom variant', () => {
+    render(<Loading variant="danger" />);
+
+    const spinner = screen.getByRole('status');
+    expect(spinner).toHaveClass('text-danger');
+  });
+
+  it('has proper container classes', () => {
+    const { container } = render(<Loading />);
+
+    const wrapper = container.firstChild;
+    expect(wrapper).toHaveClass('d-flex');
+    expect(wrapper).toHaveClass('justify-content-center');
+    expect(wrapper).toHaveClass('align-items-center');
+  });
+
+  it('has proper default height', () => {
+    const { container } = render(<Loading />);
+
+    const wrapper = container.firstChild;
+    expect(wrapper).toHaveStyle('height: 200px');
+  });
+
+  it('renders spinner with proper animation', () => {
+    render(<Loading />);
+
+    const spinner = screen.getByRole('status');
+    expect(spinner).toHaveClass('spinner-border');
+  });
+
+  it('handles different variants correctly', () => {
+    const { rerender } = render(<Loading variant="success" />);
+
+    expect(screen.getByRole('status')).toHaveClass('text-success');
+
+    rerender(<Loading variant="warning" />);
+    expect(screen.getByRole('status')).toHaveClass('text-warning');
+  });
+
+  it('works with empty message', () => {
+    render(<Loading message="" />);
+
+    const spinner = screen.getByRole('status');
     expect(spinner).toBeInTheDocument();
-    expect(text).toBeInTheDocument();
+
+    const hiddenText = spinner.querySelector('.visually-hidden');
+    expect(hiddenText).toBeInTheDocument();
+    expect(hiddenText).toHaveTextContent('');
   });
 
-  it('can be used inline', () => {
-    const { container } = render(<Loading className="d-inline-flex" />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('d-inline-flex');
-  });
-
-  it('has proper minimum height', () => {
+  it('maintains proper structure', () => {
     const { container } = render(<Loading />);
-    
-    const wrapper = container.firstChild;
-    expect(wrapper).toHaveClass('py-4');
-  });
 
-  it('renders consistently', () => {
-    const { container: container1 } = render(<Loading />);
-    const { container: container2 } = render(<Loading />);
-    
-    expect(container1.innerHTML).toBe(container2.innerHTML);
+    const wrapper = container.firstChild;
+    expect(wrapper).toBeInTheDocument();
+    expect(wrapper?.firstChild).toHaveClass('spinner-border');
   });
 });
